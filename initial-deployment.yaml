@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nblotti-security
+  labels:
+    app: nblotti_security
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nblotti_security
+  template:
+    metadata:
+      labels:
+        app: nblotti_security
+    spec:
+      containers:
+        - name: nblotti
+          image: nblotti/security:v0.0.2
+          ports:
+            - containerPort: 8080
+      imagePullSecrets:
+        - name: myregistrykey
