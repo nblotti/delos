@@ -1,4 +1,4 @@
-package ch.nblotti.securities.index;
+package ch.nblotti.securities.index.sp500;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;

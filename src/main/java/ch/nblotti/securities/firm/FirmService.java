@@ -89,4 +89,15 @@ public class FirmService {
   public Iterable<FirmPO> saveAll(List<FirmPO> firmPOS) {
     return firmRepository.saveAll(firmPOS);
   }
+
+  public void saveAllIfNotExist(Collection<FirmPO> firms) {
+
+    for (FirmPO firm : firms) {
+      Optional<FirmPO> dbFirm = findByExchangeAndCode(firm.getExchange(), firm.getCode());
+      if (!dbFirm.isPresent()) {
+        save(firm);
+      }
+    }
+  }
+
 }

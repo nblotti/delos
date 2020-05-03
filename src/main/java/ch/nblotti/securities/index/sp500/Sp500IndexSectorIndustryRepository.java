@@ -1,10 +1,8 @@
-package ch.nblotti.securities.index;
+package ch.nblotti.securities.index.sp500;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
 import java.time.LocalDate;
 
 @Repository
