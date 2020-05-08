@@ -1,5 +1,6 @@
 package ch.nblotti.securities;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -15,9 +16,9 @@ import org.springframework.web.client.RestTemplate;
 @PropertySource(value = "classpath:override.properties", ignoreResourceNotFound = true)
 public class SecuritiesApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(SecuritiesApplication.class, args);
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(SecuritiesApplication.class, args);
+  }
 
 
   @Bean
@@ -26,6 +27,11 @@ public class SecuritiesApplication {
     rt.getMessageConverters().add(new StringHttpMessageConverter());
     return rt;
 
+  }
+
+  @Bean
+  public ModelMapper modelMapper() {
+    return new ModelMapper();
   }
 
 }

@@ -30,7 +30,7 @@ public class Sp500LoaderStateMachineTest {
         .step()
         .sendEvent(LOADER_EVENTS.EVENT_RECEIVED)
         .expectStateChanged(1)
-        .expectStates(LOADER_STATES.DETERMINING_DATE)
+        .expectStates(LOADER_STATES.END_OF_MONTH)
         .and()
         .build();
     plan.test();

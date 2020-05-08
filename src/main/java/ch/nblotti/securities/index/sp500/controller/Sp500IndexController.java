@@ -1,8 +1,12 @@
-package ch.nblotti.securities.index.sp500;
+package ch.nblotti.securities.index.sp500.controller;
 
 
-import ch.nblotti.securities.firm.FirmPO;
-import ch.nblotti.securities.firm.FirmService;
+import ch.nblotti.securities.firm.service.FirmService;
+import ch.nblotti.securities.index.sp500.LOADER_EVENTS;
+import ch.nblotti.securities.index.sp500.LOADER_STATES;
+import ch.nblotti.securities.index.sp500.respository.Sp500IndexSectorIndustryRepository;
+import ch.nblotti.securities.index.sp500.service.Sp500IndexService;
+import ch.nblotti.securities.index.sp500.to.Sp500IndexSectorIndustryTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.web.bind.annotation.*;
@@ -55,7 +59,7 @@ public class Sp500IndexController {
       throw new IllegalArgumentException("End month or start month cannot be bigger than 12. start month cannot be bigger than end month");
 
 
-    DateTimeFormatter format1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
 
     int december = 12;
 
@@ -65,21 +69,13 @@ public class Sp500IndexController {
       for (int month = startMonth; month <= december; month++) {
         LocalDate localDate = localDate(year, month);
 
-        Collection<FirmPO> firms = sp500IndexService.getSPCompositionAtDate(localDate.format(format1));
 
-        firmService.saveAllIfNotExist(firms);
-        sp500IndexService.deleteByDate(localDate);
-        sp500IndexService.saveIndexCompositionAtDate(localDate, firms);
+        //TODO NBL
       }
 
     }
   }
 
-  @GetMapping(value = "/delete")
-  public void load(@RequestParam(name = "startyear", required = true) Integer startYear, @RequestParam(name = "startmonth", required = true) Integer startMonth) {
-
-    sp500IndexService.deleteByDate(localDate(startYear, startMonth));
-  }
 
   private LocalDate localDate(int year, int month) {
     Calendar cal = Calendar.getInstance();
@@ -101,7 +97,7 @@ public class Sp500IndexController {
 
 
   @GetMapping(value = "/sp500/{sector}/{industry}/")
-  public Iterable<Sp500IndexSectorIndustryPO> sp500MarketCapBySectorIndustryDate(@NotNull @PathVariable String sector, @NotNull @PathVariable String industry, @NotNull @RequestParam(name = "startyear", required = true) Integer startYear, @RequestParam(name = "startmonth", required = true) Integer startMonth) {
+  public Iterable<Sp500IndexSectorIndustryTO> sp500MarketCapBySectorIndustryDate(@NotNull @PathVariable String sector, @NotNull @PathVariable String industry, @NotNull @RequestParam(name = "startyear", required = true) Integer startYear, @RequestParam(name = "startmonth", required = true) Integer startMonth) {
 
     DateTimeFormatter format1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 

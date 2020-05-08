@@ -1,4 +1,4 @@
-package ch.nblotti.securities.index.sp500;
+package ch.nblotti.securities.index.sp500.to;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "INDEX_COMPOSITION")
-class IndexComposition {
+public class IndexCompositionTO {
 
   @Id
   @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -28,10 +28,10 @@ class IndexComposition {
   @JsonProperty("EXCHANGE")
   private String exchange;
 
-  public IndexComposition() {
+  public IndexCompositionTO() {
   }
 
-  public IndexComposition(@NotNull LocalDate date, @NotNull String index, @NotNull String codeFirm, String exchange) {
+  public IndexCompositionTO(@NotNull LocalDate date, @NotNull String index, @NotNull String codeFirm, String exchange) {
     this.date = date;
     this.index = index;
     this.codeFirm = codeFirm;

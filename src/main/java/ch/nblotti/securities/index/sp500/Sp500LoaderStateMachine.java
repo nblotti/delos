@@ -1,7 +1,16 @@
 package ch.nblotti.securities.index.sp500;
 
-import ch.nblotti.securities.firm.FirmPO;
-import ch.nblotti.securities.firm.FirmService;
+import ch.nblotti.securities.firm.dto.FirmDTO;
+import ch.nblotti.securities.firm.dto.FirmHighlightsDTO;
+import ch.nblotti.securities.firm.dto.SharesStatsDTO;
+import ch.nblotti.securities.firm.dto.ValuationDTO;
+import ch.nblotti.securities.firm.service.FirmService;
+import ch.nblotti.securities.firm.to.*;
+import ch.nblotti.securities.index.sp500.service.Sp500IndexService;
+import org.modelmapper.AbstractConverter;
+import org.modelmapper.Converter;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,14 +25,26 @@ import org.springframework.statemachine.config.builders.StateMachineConfiguratio
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableStateMachine
 public class Sp500LoaderStateMachine extends EnumStateMachineConfigurerAdapter<LOADER_STATES, LOADER_EVENTS> {
 
+
+  private final static String EXCHANGE_NYSE = "NYSE";
+  private final static String EXCHANGE_NASDAQ = "NASDAQ";
+
+
+  public static final String EVENT_MESSAGE_DAY = "firms";
+  private TypeMap<ValuationDTO, FirmEODValuationTO> tm;
 
   @Value("${nyse.closed.days}")
   public String nyseClosedDays;
@@ -33,6 +54,17 @@ public class Sp500LoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
 
   @Autowired
   private FirmService firmService;
+
+  @Autowired
+  private ModelMapper modelMapper;
+
+
+  @PostConstruct
+  public void initFFirmHistorical() {
+
+//TODO NBL
+  }
+
 
   @Override
   public void configure(
@@ -47,84 +79,53 @@ public class Sp500LoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
   public void configure(StateMachineStateConfigurer<LOADER_STATES, LOADER_EVENTS> states) throws Exception {
     states.withStates()
       .initial(LOADER_STATES.READY)
-      .state(LOADER_STATES.CHECK_END_OF_MONTH, isEndofMonth())
-      .state(LOADER_STATES.DETERMINING_DATE, getDayOfWeek())
-      .state(LOADER_STATES.FIRM, updateFirm())
-      .state(LOADER_STATES.MARKET_CAP, getMarketCap())
-      .state(LOADER_STATES.PRICE, getPrice())
+      .state(LOADER_STATES.GET_DATES, getDates())
+      .state(LOADER_STATES.LOAD_NYSE, loadNYSE())
+      .state(LOADER_STATES.LOAD_NASDAQ, loadNASDAQ())
+      .state(LOADER_STATES.SAVE_FIRM, saveFirms())
+      .state(LOADER_STATES.END_OF_MONTH, saveIfEndOfMonth())
       .end(LOADER_STATES.DONE);
 
 
   }
 
+
   @Override
   public void configure(StateMachineTransitionConfigurer<LOADER_STATES, LOADER_EVENTS> transitions) throws Exception {
     transitions.withExternal()
-      .source(LOADER_STATES.READY).target(LOADER_STATES.CHECK_END_OF_MONTH).event(LOADER_EVENTS.EVENT_RECEIVED)
+      .source(LOADER_STATES.READY).target(LOADER_STATES.GET_DATES).event(LOADER_EVENTS.EVENT_RECEIVED)
       .and()
       .withExternal()
-      .source(LOADER_STATES.CHECK_END_OF_MONTH).target(LOADER_STATES.FIRM).event(LOADER_EVENTS.END_OF_MONTH)
+      .source(LOADER_STATES.GET_DATES).target(LOADER_STATES.LOAD_NYSE).event(LOADER_EVENTS.WEEK)
       .and()
       .withExternal()
-      .source(LOADER_STATES.CHECK_END_OF_MONTH).target(LOADER_STATES.DETERMINING_DATE).event(LOADER_EVENTS.NOT_END_OF_MONTH)
+      .source(LOADER_STATES.GET_DATES).target(LOADER_STATES.DONE).event(LOADER_EVENTS.END_OF_WEEK_OR_DAY_OFF)
       .and()
       .withLocal()
-      .source(LOADER_STATES.FIRM).target(LOADER_STATES.DETERMINING_DATE)
-      .and()
-      .withExternal()
-      .source(LOADER_STATES.DETERMINING_DATE).target(LOADER_STATES.DONE).event(LOADER_EVENTS.END_OF_WEEK_DAY_OFF)
-      .and()
-      .withExternal()
-      .source(LOADER_STATES.DETERMINING_DATE).target(LOADER_STATES.MARKET_CAP).event(LOADER_EVENTS.DAY_OF_WEEK)
+      .source(LOADER_STATES.LOAD_NYSE).target(LOADER_STATES.LOAD_NASDAQ)
       .and()
       .withLocal()
-      .source(LOADER_STATES.MARKET_CAP).target(LOADER_STATES.PRICE)
+      .source(LOADER_STATES.LOAD_NASDAQ).target(LOADER_STATES.SAVE_FIRM)
+      .and()
+      .withExternal()
+      .source(LOADER_STATES.SAVE_FIRM).target(LOADER_STATES.END_OF_MONTH).event(LOADER_EVENTS.EOM)
       .and()
       .withLocal()
-      .source(LOADER_STATES.PRICE).target(LOADER_STATES.DONE);
+      .source(LOADER_STATES.SAVE_FIRM).target(LOADER_STATES.DONE)
+      .and()
+      .withLocal()
+      .source(LOADER_STATES.END_OF_MONTH).target(LOADER_STATES.DONE);
   }
 
+
   @Bean
-  public Action<LOADER_STATES, LOADER_EVENTS> getDayOfWeek() {
+  public Action<LOADER_STATES, LOADER_EVENTS> getDates() {
     return new Action<LOADER_STATES, LOADER_EVENTS>() {
 
       @Override
       public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> context) {
 
-        // context.getStateMachine();
-        int a = 2;
-
-
-        if (wasYesterdayEndOfWeekOrDayOff())
-          context.getStateMachine().sendEvent(LOADER_EVENTS.END_OF_WEEK_DAY_OFF);
-        else context.getStateMachine().sendEvent(LOADER_EVENTS.DAY_OF_WEEK);
-      }
-    };
-  }
-
-
-  private boolean wasYesterdayEndOfWeekOrDayOff() {
-
-    if (true) return false;
-    Calendar cal = Calendar.getInstance();
-    cal.set(Calendar.HOUR_OF_DAY, 0); // ! clear would not reset the hour of day !
-    cal.clear(Calendar.MINUTE);
-    cal.clear(Calendar.SECOND);
-    cal.clear(Calendar.MILLISECOND);
-
-    //dimanche (1) & lundi (2)
-    if (cal.get(Calendar.DAY_OF_WEEK) == 1 || cal.get(Calendar.DAY_OF_WEEK) == 2)
-      return true;
-
-    return false;
-  }
-
-  @Bean
-  public Action<LOADER_STATES, LOADER_EVENTS> isEndofMonth() {
-    return new Action<LOADER_STATES, LOADER_EVENTS>() {
-
-      @Override
-      public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> context) {
+        Message<LOADER_EVENTS> message;
 
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 0); // ! clear would not reset the hour of day !
@@ -132,58 +133,120 @@ public class Sp500LoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
         cal.clear(Calendar.SECOND);
         cal.clear(Calendar.MILLISECOND);
 
-        // if (cal.get(Calendar.DAY_OF_MONTH) == Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)) {
-        sp500IndexService.deleteByDate(LocalDate.now());
-        Collection<FirmPO> firms = sp500IndexService.getSPCurrentComposition();
-        sp500IndexService.saveIndexCompositionAtDate(LocalDate.now(), firms);
+        boolean wasYesterdayDayOff = wasYesterdayDayOff();
 
-
-        Message<LOADER_EVENTS> message = MessageBuilder
-          .withPayload(LOADER_EVENTS.END_OF_MONTH)
-          .setHeader("firms", firms)
-          .build();
-
+        //on est un jour de week-end (dimanche - lundi) ou hier était férié
+        if ((Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
+          || (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY)
+          || wasYesterdayDayOff) {
+          message = MessageBuilder
+            .withPayload(LOADER_EVENTS.END_OF_WEEK_OR_DAY_OFF)
+            .build();
+        } else
+        //on est dimanche ou lundi ou hier était férié
+        {
+          message = MessageBuilder
+            .withPayload(LOADER_EVENTS.WEEK)
+            .build();
+        }
         context.getStateMachine().sendEvent(message);
-
-        // }
-
       }
     };
   }
 
+
+  private boolean wasYesterdayDayOff() {
+    return false;
+  }
+
+
   @Bean
-  public Action<LOADER_STATES, LOADER_EVENTS> updateFirm() {
+  public Action<LOADER_STATES, LOADER_EVENTS> loadNYSE() {
+    return new Action<LOADER_STATES, LOADER_EVENTS>() {
+
+      @Override
+      public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> stateContext) {
+        loadMarket(Sp500LoaderStateMachine.this.EXCHANGE_NYSE, stateContext);
+      }
+    };
+
+  }
+
+  @Bean
+  public Action<LOADER_STATES, LOADER_EVENTS> loadNASDAQ() {
+    return new Action<LOADER_STATES, LOADER_EVENTS>() {
+      @Override
+      public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> stateContext) {
+        loadMarket(Sp500LoaderStateMachine.this.EXCHANGE_NASDAQ, stateContext);
+      }
+
+    };
+
+  }
+
+  public void loadMarket(final String exchange, StateContext<LOADER_STATES, LOADER_EVENTS> context) {
+
+
+    Collection<FirmEODQuoteTO> firmSaved = (List<FirmEODQuoteTO>) context.getExtendedState().getVariables().get("quotes");
+    if (firmSaved == null)
+      firmSaved = new ArrayList<>();
+
+    firmSaved.addAll(sp500IndexService.loadMarket(exchange));
+
+    context.getExtendedState()
+      .getVariables().put("quotes", firmSaved);
+  }
+
+
+  @Bean
+  public Action<LOADER_STATES, LOADER_EVENTS> saveIfEndOfMonth() {
     return new Action<LOADER_STATES, LOADER_EVENTS>() {
 
       @Override
       public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> context) {
 
-        Collection<FirmPO> firms = (Collection<FirmPO>) context.getMessage().getHeaders().get("firms");
-        firmService.saveAllIfNotExist(firms);
-
+        LocalDate now = LocalDate.now();
+        //TODO NBL
       }
     };
   }
 
   @Bean
-  public Action<LOADER_STATES, LOADER_EVENTS> getMarketCap() {
+  public Action<LOADER_STATES, LOADER_EVENTS> saveFirms() {
     return new Action<LOADER_STATES, LOADER_EVENTS>() {
 
       @Override
       public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> context) {
-        int a = 2;
+
+        Collection<FirmEODValuationTO> valuations = new ArrayList<>();
+        Collection<FirmEODHighlightsTO> highlights = new ArrayList<>();
+        Collection<FirmEODSharesStatsTO> sharesStats = new ArrayList<>();
+
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        List<FirmEODQuoteTO> firms = (List<FirmEODQuoteTO>) context.getExtendedState().getVariables().get("quotes");
+
+        for (FirmEODQuoteTO firmEODQuoteTO : firms) {
+
+          if (!sp500IndexService.hasBeenListed(firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode()))
+            continue;
+
+          FirmEODValuationTO fVpost = firmService.getValuation(firmEODQuoteTO);
+          valuations.add(fVpost);
+
+          FirmEODHighlightsTO fHpost = firmService.getHighlights(firmEODQuoteTO);
+          highlights.add(fHpost);
+
+          FirmEODSharesStatsTO fSpost = firmService.getSharesStat(firmEODQuoteTO);
+          fSpost.setCode(firmEODQuoteTO.getCode());
+        }
+
+        firmService.saveAllHighlights(highlights);
+        firmService.saveAllValuations(valuations);
+        firmService.saveAllSharesStats(sharesStats);
+        firmService.saveAllEODMarketQuotes(firms);
       }
     };
   }
 
-  @Bean
-  public Action<LOADER_STATES, LOADER_EVENTS> getPrice() {
-    return new Action<LOADER_STATES, LOADER_EVENTS>() {
 
-      @Override
-      public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> context) {
-        int a = 2;
-      }
-    };
-  }
 }

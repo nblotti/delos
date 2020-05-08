@@ -1,11 +1,11 @@
-package ch.nblotti.securities.index.sp500;
+package ch.nblotti.securities.index.sp500.to;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "SP_500_BY_SECTOR_INDUSTRY_DATE")
-public class Sp500IndexSectorIndustryPO {
+public class Sp500IndexSectorIndustryTO {
 
   @Id
   @Column(name = "id")
@@ -23,7 +23,7 @@ public class Sp500IndexSectorIndustryPO {
   @Column(name = "market_cap")
   private double market_cap;
 
-  public Sp500IndexSectorIndustryPO() {
+  public Sp500IndexSectorIndustryTO() {
   }
 
   public Long getId() {

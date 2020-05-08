@@ -1,16 +1,11 @@
 package ch.nblotti.securities.firm;
 
 import ch.nblotti.securities.JpaDao;
-import org.hibernate.CallbackException;
 import org.hibernate.EmptyInterceptor;
-import org.hibernate.EntityMode;
 import org.hibernate.Transaction;
 import org.hibernate.type.Type;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
-import java.util.Iterator;
 
 public class FirmListener extends EmptyInterceptor {
 
