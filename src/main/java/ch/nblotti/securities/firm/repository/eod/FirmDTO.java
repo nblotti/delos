@@ -1,6 +1,6 @@
-package ch.nblotti.securities.firm.dto;
+package ch.nblotti.securities.firm.repository.eod;
 
-public class FirmDTO {
+class FirmDTO {
 
   String code;
   String name;

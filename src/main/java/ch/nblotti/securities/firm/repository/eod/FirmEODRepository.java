@@ -1,9 +1,5 @@
-package ch.nblotti.securities.firm.repository;
+package ch.nblotti.securities.firm.repository.eod;
 
-import ch.nblotti.securities.firm.dto.FirmDTO;
-import ch.nblotti.securities.firm.dto.FirmHighlightsDTO;
-import ch.nblotti.securities.firm.dto.SharesStatsDTO;
-import ch.nblotti.securities.firm.dto.ValuationDTO;
 import ch.nblotti.securities.firm.to.FirmEODHighlightsTO;
 import ch.nblotti.securities.firm.to.FirmEODQuoteTO;
 import ch.nblotti.securities.firm.to.FirmEODSharesStatsTO;
@@ -25,7 +21,6 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,17 +60,18 @@ public class FirmEODRepository {
   private CacheManager cacheManager;
 
 
-  public FirmEODValuationTO getValuationForFirm(String exchange, String symbol) {
+  public FirmEODValuationTO getYesterdayValuationForFirm(String exchange, String symbol) {
 
     LocalDate yesterday = LocalDate.now().minusDays(1);
+    String key = String.format("%s-%s", FIRMS_FINANCIALS, symbol);
 
-    if (cacheManager.getCache(FIRMS_FINANCIALS).get(FIRMS_FINANCIALS_JSON) == null) {
+    if (cacheManager.getCache(FIRMS_FINANCIALS).get(key) == null) {
       String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
       final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
       DocumentContext content = JsonPath.parse(response.getBody());
-      cacheManager.getCache(FIRMS_FINANCIALS).put(FIRMS_FINANCIALS_JSON, content);
+      cacheManager.getCache(FIRMS_FINANCIALS).put(key, content);
     }
-    ValuationDTO valuationDTO = ((DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(FIRMS_FINANCIALS_JSON).get()).read(valuationStr, ValuationDTO.class);
+    ValuationDTO valuationDTO = ((DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(key).get()).read(valuationStr, ValuationDTO.class);
 
     FirmEODValuationTO fVpost = modelMapper.map(valuationDTO, FirmEODValuationTO.class);
     fVpost.setExchange(exchange);
@@ -89,14 +85,15 @@ public class FirmEODRepository {
   public FirmEODHighlightsTO getYesterdayHighlightsForFirm(String exchange, String symbol) {
 
     LocalDate yesterday = LocalDate.now().minusDays(1);
+    String key = String.format("%s-%s", FIRMS_FINANCIALS, symbol);
 
-    DocumentContext jsonContext = (DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(FIRMS_FINANCIALS_JSON).get();
+    DocumentContext jsonContext = (DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(key).get();
 
     if (jsonContext == null) {
       String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
       final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
       jsonContext = JsonPath.parse(response.getBody());
-      cacheManager.getCache(FIRMS_FINANCIALS).put(FIRMS_FINANCIALS_JSON, jsonContext);
+      cacheManager.getCache(FIRMS_FINANCIALS).put(key, jsonContext);
     }
     FirmHighlightsDTO firmHighlightsDTO = jsonContext.read(highlightStr, FirmHighlightsDTO.class);
     FirmEODHighlightsTO fHpost = modelMapper.map(firmHighlightsDTO, FirmEODHighlightsTO.class);
@@ -110,13 +107,14 @@ public class FirmEODRepository {
   public FirmEODSharesStatsTO getYesterdaySharesStatByExchangeAndFirm(String exchange, String symbol) {
 
     LocalDate yesterday = LocalDate.now().minusDays(1);
+    String key = String.format("%s-%s", FIRMS_FINANCIALS, symbol);
 
-    DocumentContext jsonContext = (DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(FIRMS_FINANCIALS_JSON).get();
+    DocumentContext jsonContext = (DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(key).get();
     if (jsonContext == null) {
       String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
       final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
       jsonContext = JsonPath.parse(response.getBody());
-      cacheManager.getCache(FIRMS_FINANCIALS).put(FIRMS_FINANCIALS_JSON, jsonContext);
+      cacheManager.getCache(FIRMS_FINANCIALS).put(key, jsonContext);
     }
     SharesStatsDTO sharesStatsDTO = jsonContext.read(sharesStatStr, SharesStatsDTO.class);
 
@@ -151,7 +149,6 @@ public class FirmEODRepository {
     }
     Cache.ValueWrapper sVW = cacheManager.getCache(EXCHANGE).get(exchange);
 
-    //DocumentContext jsonContext = (DocumentContext) Objects.requireNonNull(cacheManager.getCache(EXCHANGE)).get(exchange);
 
     if (sVW != null) {
       jsonContext = (DocumentContext) sVW.get();
@@ -167,20 +164,6 @@ public class FirmEODRepository {
 
     return firmsTOs;
   }
-
-  public SharesStatsDTO getHistoricalFirmHighlightsDTO(String exchange, String symbol) {
-
-    DocumentContext jsonContext = (DocumentContext) cacheManager.getCache(EXCHANGE).get(FIRMS_FINANCIALS_JSON).get();
-    if (jsonContext == null) {
-      String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
-      final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
-      jsonContext = JsonPath.parse(response.getBody());
-      cacheManager.getCache(FIRMS_FINANCIALS).put(FIRMS_FINANCIALS_JSON, jsonContext);
-    }
-    return jsonContext.read(sharesStatStr, SharesStatsDTO.class);
-
-  }
-
 
   @PostConstruct
   public void initFirmHighlightsMapper() {
@@ -285,7 +268,6 @@ public class FirmEODRepository {
     modelMapper.addConverter(toUppercase);
 
   }
-
 
 
 }

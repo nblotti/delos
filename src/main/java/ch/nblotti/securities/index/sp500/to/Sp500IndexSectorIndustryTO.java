@@ -4,34 +4,56 @@ import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "SP_500_BY_SECTOR_INDUSTRY_DATE")
+@Table(name = "SP500_COMPOSITION")
 public class Sp500IndexSectorIndustryTO {
 
   @Id
   @Column(name = "id")
 
-  @SequenceGenerator(initialValue = 2000000, name = "id_gen_sp_500", sequenceName = "sp500_id_seq",allocationSize=1)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "id_gen_sp_500")
+  @SequenceGenerator(initialValue = 2000000, name = "id_gen_sp_500", sequenceName = "sp500_id_seq", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "id_gen_sp_500")
   private Long id;
+
+  @Column(name = "codeFirm")
+  private String codeFirm;
+
+  @Column(name = "exchange")
+  private String exchange;
+
+  @Column(name = "date")
+  private LocalDate date;
 
   @Column(name = "sector")
   private String sector;
+
   @Column(name = "industry")
   private String industry;
-  @Column(name = "date")
-  private LocalDate date;
-  @Column(name = "market_cap")
-  private double market_cap;
 
   public Sp500IndexSectorIndustryTO() {
   }
 
-  public Long getId() {
-    return id;
+  public String getCodeFirm() {
+    return codeFirm;
   }
 
-  public void setId(Long id) {
-    this.id = id;
+  public void setCodeFirm(String codeFirm) {
+    this.codeFirm = codeFirm;
+  }
+
+  public String getExchange() {
+    return exchange;
+  }
+
+  public void setExchange(String exchange) {
+    this.exchange = exchange;
+  }
+
+  public LocalDate getDate() {
+    return date;
+  }
+
+  public void setDate(LocalDate date) {
+    this.date = date;
   }
 
   public String getSector() {
@@ -48,21 +70,5 @@ public class Sp500IndexSectorIndustryTO {
 
   public void setIndustry(String industry) {
     this.industry = industry;
-  }
-
-  public LocalDate getDate() {
-    return date;
-  }
-
-  public void setDate(LocalDate date) {
-    this.date = date;
-  }
-
-  public double getMarket_cap() {
-    return market_cap;
-  }
-
-  public void setMarket_cap(double market_cap) {
-    this.market_cap = market_cap;
   }
 }

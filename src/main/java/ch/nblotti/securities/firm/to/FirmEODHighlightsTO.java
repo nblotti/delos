@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
-@Table(name = "firm_highlights")
+@Table(name = "FIRM_EOD_HIGHLIGHTS")
 public class FirmEODHighlightsTO {
 
 

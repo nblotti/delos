@@ -1,6 +1,6 @@
-package ch.nblotti.securities.firm.dto;
+package ch.nblotti.securities.firm.repository.eod;
 
-public class ValuationDTO {
+class ValuationDTO {
 
   public Float TrailingPE;
   public Float ForwardPE;

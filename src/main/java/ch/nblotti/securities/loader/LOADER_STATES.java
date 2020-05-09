@@ -1,4 +1,4 @@
-package ch.nblotti.securities.index.sp500;
+package ch.nblotti.securities.loader;
 
 public enum LOADER_STATES {
   READY,
@@ -6,7 +6,6 @@ public enum LOADER_STATES {
   LOAD_NYSE,
   LOAD_NASDAQ,
   SAVE_FIRM,
-  END_OF_MONTH,
   ERROR,
   DONE;
 }

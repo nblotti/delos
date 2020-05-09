@@ -1,6 +1,6 @@
-package ch.nblotti.securities.firm.dto;
+package ch.nblotti.securities.firm.repository.eod;
 
-public class FirmHighlightsDTO {
+class FirmHighlightsDTO {
 
   public long MarketCapitalization;
   public double MarketCapitalizationMln;

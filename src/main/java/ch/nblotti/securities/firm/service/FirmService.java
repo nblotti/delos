@@ -1,10 +1,8 @@
 package ch.nblotti.securities.firm.service;
 
 
-import ch.nblotti.securities.firm.dto.FirmDTO;
-import ch.nblotti.securities.firm.dto.SharesStatsDTO;
-import ch.nblotti.securities.firm.dto.ValuationDTO;
 import ch.nblotti.securities.firm.repository.*;
+import ch.nblotti.securities.firm.repository.eod.FirmEODRepository;
 import ch.nblotti.securities.firm.to.FirmEODHighlightsTO;
 import ch.nblotti.securities.firm.to.FirmEODQuoteTO;
 import ch.nblotti.securities.firm.to.FirmEODSharesStatsTO;
@@ -28,24 +26,24 @@ public class FirmService {
 
 
   @Autowired
-  FirmEODQuoteRepository firmEODQuoteRepository;
+  FirmQuoteRepository firmQuoteRepository;
 
   @Autowired
   private FirmEODRepository firmEODRepository;
 
   @Autowired
-  private FirmEODHighlightsRepository firmEODHighlightsRepository;
+  private FirmHighlightsRepository firmHighlightsRepository;
 
   @Autowired
-  private FirmEODSharesStatsRepository firmEODSharesStatsRepository;
+  private FirmSharesStatsRepository firmSharesStatsRepository;
 
   @Autowired
-  private FirmEODValuationRepository firmEODValuationRepository;
+  private FirmValuationRepository firmValuationRepository;
 
 
   public FirmEODValuationTO getValuation(FirmEODQuoteTO firmEODQuoteTO) {
 
-    return firmEODRepository.getValuationForFirm(firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode());
+    return firmEODRepository.getYesterdayValuationForFirm(firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode());
 
   }
 
@@ -65,20 +63,20 @@ public class FirmService {
 
 
   public Iterable<FirmEODQuoteTO> saveAllEODMarketQuotes(List<FirmEODQuoteTO> firmsTOs) {
-    return firmEODQuoteRepository.saveAll(firmsTOs);
+    return firmQuoteRepository.saveAll(firmsTOs);
   }
 
 
   public void saveAllValuations(Collection<FirmEODValuationTO> valuations) {
-    firmEODValuationRepository.saveAll(valuations);
+    firmValuationRepository.saveAll(valuations);
   }
 
   public void saveAllHighlights(Collection<FirmEODHighlightsTO> highlights) {
-    firmEODHighlightsRepository.saveAll(highlights);
+    firmHighlightsRepository.saveAll(highlights);
   }
 
   public void saveAllSharesStats(Collection<FirmEODSharesStatsTO> sharesStats) {
-    firmEODSharesStatsRepository.saveAll(sharesStats);
+    firmSharesStatsRepository.saveAll(sharesStats);
   }
 
 

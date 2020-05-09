@@ -32,7 +32,7 @@ CREATE TABLE FIRM_EOD_SHARE_STATS
 );
 
 
-drop table IF EXISTS FIRM_HIGHLIGHTS CASCADE;
+drop table IF EXISTS FIRM_EOD_HIGHLIGHTS CASCADE;
 CREATE TABLE FIRM_HIGHLIGHTS
 (
     ID                           SERIAL PRIMARY KEY,
@@ -80,7 +80,7 @@ CREATE TABLE FIRM_EOD_VALUATION
     FORWARD_PE               double precision,
     PRICE_SALES_TTM          double precision,
     PRICE_BOOK_MRQ           double precision,
-    ENTREPRISE_VALUE_REVENUE double precision,
+    ENTERPRISE_VALUE_REVENUE double precision,
     ENTERPRISE_VALUE_EBITDA   double precision,
     unique (DATE, CODE, EXCHANGE)
 );

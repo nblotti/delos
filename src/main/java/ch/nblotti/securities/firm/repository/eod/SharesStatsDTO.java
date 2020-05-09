@@ -1,6 +1,6 @@
-package ch.nblotti.securities.firm.dto;
+package ch.nblotti.securities.firm.repository.eod;
 
-public class SharesStatsDTO {
+class SharesStatsDTO {
   public long SharesOutstanding;
   public long SharesFloat;
   public float PercentInsiders;

@@ -2,8 +2,8 @@ package ch.nblotti.securities.index.sp500.controller;
 
 
 import ch.nblotti.securities.firm.service.FirmService;
-import ch.nblotti.securities.index.sp500.LOADER_EVENTS;
-import ch.nblotti.securities.index.sp500.LOADER_STATES;
+import ch.nblotti.securities.loader.LOADER_EVENTS;
+import ch.nblotti.securities.loader.LOADER_STATES;
 import ch.nblotti.securities.index.sp500.respository.Sp500IndexSectorIndustryRepository;
 import ch.nblotti.securities.index.sp500.service.Sp500IndexService;
 import ch.nblotti.securities.index.sp500.to.Sp500IndexSectorIndustryTO;
@@ -16,7 +16,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 
 @RestController

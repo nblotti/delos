@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
-@Table(name = "shares_statistiques")
+@Table(name = "FIRM_EOD_SHARE_STATS")
 public class FirmEODSharesStatsTO {
 
 
