@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.websocket.server.PathParam;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.logging.Logger;
@@ -109,6 +112,14 @@ public class Sp500IndexController {
       System.out.println(String.format("%s - %s", localDate, result));
       sp500LoaderStateMachine.stop();
     }
+  }
+
+  @PostMapping(value = "/ping")
+  public long ping() {
+    ZoneId zone = ZoneId.of("Europe/Berlin");
+    LocalDateTime now = LocalDateTime.now();
+    ZoneOffset zoneOffSet = zone.getRules().getOffset(now);
+    return LocalDate.now().atStartOfDay(zoneOffSet).toInstant().toEpochMilli();
   }
 
 }
