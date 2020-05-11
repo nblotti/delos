@@ -10,7 +10,7 @@ public class FirmEODValuationTO {
 
 
   @Id
-  @SequenceGenerator(initialValue = 2000000, name = "firm_valuation_id_gen_firm", sequenceName = "firm_valuation_id_seq", allocationSize = 1)
+  @SequenceGenerator(initialValue = 2000000, name = "firm_valuation_id_gen_firm", sequenceName = "firm_eod_valuation_id_seq", allocationSize = 1)
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "firm_valuation_id_gen_firm")
   private Integer id;
 

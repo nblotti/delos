@@ -9,7 +9,7 @@ public class FirmEODQuoteTO {
 
 
   @Id
-  @SequenceGenerator(initialValue = 2000000, name = "id_gen_firm_quote", sequenceName = "firm_quote_id_seq", allocationSize = 1)
+  @SequenceGenerator(initialValue = 2000000, name = "id_gen_firm_quote", sequenceName = "firm_eod_quote_id_seq", allocationSize = 1)
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "id_gen_firm_quote")
   private Integer id;
 
