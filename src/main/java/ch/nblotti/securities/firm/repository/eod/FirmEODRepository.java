@@ -34,7 +34,9 @@ public class FirmEODRepository {
   public static final String FIRMS_FINANCIALS = "firms";
   public static final String FIRMS_FINANCIALS_JSON = "firmsFinancialJson";
 
-  private DateTimeFormatter format1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+  @Autowired
+  private DateTimeFormatter format1;
 
 
   @Value("${firm.marketCap.bulk.url}")
@@ -60,10 +62,10 @@ public class FirmEODRepository {
   private CacheManager cacheManager;
 
 
-  public FirmEODValuationTO getYesterdayValuationForFirm(String exchange, String symbol) {
+  public FirmEODValuationTO getValuationByDateAndFirm(LocalDate runDate, String exchange, String symbol) {
 
-    LocalDate yesterday = LocalDate.now().minusDays(1);
-    String key = String.format("%s-%s", FIRMS_FINANCIALS, symbol);
+    String key = String.format("%s-%s-%s", FIRMS_FINANCIALS, runDate.format(format1), symbol);
+
 
     if (cacheManager.getCache(FIRMS_FINANCIALS).get(key) == null) {
       String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
@@ -75,17 +77,16 @@ public class FirmEODRepository {
 
     FirmEODValuationTO fVpost = modelMapper.map(valuationDTO, FirmEODValuationTO.class);
     fVpost.setExchange(exchange);
-    fVpost.setDate(yesterday);
+    fVpost.setDate(runDate);
     fVpost.setCode(symbol);
 
     return fVpost;
 
   }
 
-  public FirmEODHighlightsTO getYesterdayHighlightsForFirm(String exchange, String symbol) {
+  public FirmEODHighlightsTO getHighlightsByDateAndFirm(LocalDate runDate, String exchange, String symbol) {
 
-    LocalDate yesterday = LocalDate.now().minusDays(1);
-    String key = String.format("%s-%s", FIRMS_FINANCIALS, symbol);
+    String key = String.format("%s-%s-%s", FIRMS_FINANCIALS, runDate.format(format1), symbol);
 
     DocumentContext jsonContext = (DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(key).get();
 
@@ -98,16 +99,15 @@ public class FirmEODRepository {
     FirmHighlightsDTO firmHighlightsDTO = jsonContext.read(highlightStr, FirmHighlightsDTO.class);
     FirmEODHighlightsTO fHpost = modelMapper.map(firmHighlightsDTO, FirmEODHighlightsTO.class);
     fHpost.setExchange(exchange);
-    fHpost.setDate(yesterday);
+    fHpost.setDate(runDate);
     fHpost.setCode(symbol);
 
     return fHpost;
   }
 
-  public FirmEODSharesStatsTO getYesterdaySharesStatByExchangeAndFirm(String exchange, String symbol) {
+  public FirmEODSharesStatsTO getSharesStatByDateAndExchangeAndFirm(LocalDate runDate, String exchange, String symbol) {
 
-    LocalDate yesterday = LocalDate.now().minusDays(1);
-    String key = String.format("%s-%s", FIRMS_FINANCIALS, symbol);
+    String key = String.format("%s-%s-%s", FIRMS_FINANCIALS, runDate.format(format1), symbol);
 
     DocumentContext jsonContext = (DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(key).get();
     if (jsonContext == null) {
@@ -120,7 +120,7 @@ public class FirmEODRepository {
 
     FirmEODSharesStatsTO fSpost = modelMapper.map(sharesStatsDTO, FirmEODSharesStatsTO.class);
     fSpost.setExchange(exchange);
-    fSpost.setDate(yesterday);
+    fSpost.setDate(runDate);
     fSpost.setCode(symbol);
 
     return fSpost;
@@ -138,25 +138,28 @@ public class FirmEODRepository {
   private RestTemplate restTemplate;
 
 
-  public List<FirmEODQuoteTO> getExchangeDataForDate(String exchange, LocalDate localDate) {
+  public List<FirmEODQuoteTO> getExchangeDataByDate(LocalDate runDate, String exchange) {
 
     DocumentContext jsonContext = null;
-    String finalUrl;
+   /* String finalUrl;
     if (exchange.equalsIgnoreCase("NYSE")) {
       finalUrl = "http://localhost:8080/sp500date.json";
     } else {
       finalUrl = "http://localhost:8080/nasdaq.json";
-    }
-    Cache.ValueWrapper sVW = cacheManager.getCache(EXCHANGE).get(exchange);
+    }*/
+
+    String key = String.format("%s-%s-%s", FIRMS_FINANCIALS, runDate.format(format1), exchange);
+
+    Cache.ValueWrapper sVW = cacheManager.getCache(EXCHANGE).get(key);
 
 
     if (sVW != null) {
       jsonContext = (DocumentContext) sVW.get();
     } else {
-      // String.format(marketCap, exchange, apiKey, localDate.format(format1));
+      String finalUrl = String.format(marketCap, exchange, apiKey, runDate.format(format1));
       final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
       jsonContext = JsonPath.parse(response.getBody());
-      cacheManager.getCache(EXCHANGE).put(exchange, jsonContext);
+      cacheManager.getCache(EXCHANGE).put(key, jsonContext);
     }
     List<FirmDTO> firms = Arrays.asList(jsonContext.read(sharesHistoryStr, FirmDTO[].class));
 

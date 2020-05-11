@@ -24,7 +24,9 @@ import java.util.stream.Collectors;
 public class IndexSp500EODRepository {
 
 
-  private DateTimeFormatter format1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+  @Autowired
+  private DateTimeFormatter format1;
 
   @Value("${index.sp500.component.api.url}")
   public String sp500ComponentUrl;
@@ -48,7 +50,7 @@ public class IndexSp500EODRepository {
   public Collection<Sp500IndexSectorIndustryTO> getSPCompositionAtDate(LocalDate localDate) {
 
 
-    String finalUrl = String.format(sp500ComponentUrl + EOD_INDEX_SP500, apiKey, localDate.format(format1), localDate.format(format1));
+    String finalUrl = String.format(sp500ComponentUrl, EOD_INDEX_SP500, apiKey, localDate.format(format1), localDate.format(format1));
 
     final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
 

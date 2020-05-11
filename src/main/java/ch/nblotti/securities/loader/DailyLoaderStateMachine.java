@@ -22,20 +22,26 @@ import org.springframework.statemachine.config.builders.StateMachineStateConfigu
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
 
 import javax.annotation.PostConstruct;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Configuration
 @EnableStateMachine
 public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<LOADER_STATES, LOADER_EVENTS> {
 
 
+  private static final Logger logger = Logger.getLogger("DailyLoaderStateMachine");
+
   private final static String EXCHANGE_NYSE = "NYSE";
   private final static String EXCHANGE_NASDAQ = "NASDAQ";
 
+  @Autowired
+  private DateTimeFormatter format1;
 
   public static final String EVENT_MESSAGE_DAY = "firms";
 
@@ -71,12 +77,11 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
   @Override
   public void configure(StateMachineStateConfigurer<LOADER_STATES, LOADER_EVENTS> states) throws Exception {
     states.withStates()
-      .initial(LOADER_STATES.READY)
+      .initial(LOADER_STATES.READY, initalAction())
       .state(LOADER_STATES.GET_DATES, getDates())
       .state(LOADER_STATES.LOAD_NYSE, loadNYSE())
       .state(LOADER_STATES.LOAD_NASDAQ, loadNASDAQ())
       .state(LOADER_STATES.SAVE_FIRM, saveFirms())
-
       .end(LOADER_STATES.DONE);
 
 
@@ -100,8 +105,23 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
       .withLocal()
       .source(LOADER_STATES.LOAD_NASDAQ).target(LOADER_STATES.SAVE_FIRM)
       .and()
-      .withExternal()
+      .withLocal()
       .source(LOADER_STATES.SAVE_FIRM).target(LOADER_STATES.DONE);
+  }
+
+
+  @Bean
+  public Action<LOADER_STATES, LOADER_EVENTS> initalAction() {
+    return new Action<LOADER_STATES, LOADER_EVENTS>() {
+
+      @Override
+      public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> context) {
+
+        context.getExtendedState().getVariables().put("runDate", LocalDate.now().minusDays(1));
+        context.getExtendedState().getVariables().put("runPartial", Boolean.TRUE);
+
+      }
+    };
   }
 
 
@@ -114,17 +134,30 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
 
         Message<LOADER_EVENTS> message;
 
-        if (LocalDate.now().getDayOfMonth() == 1) {
-          sp500IndexService.loadSPCompositionAtDate(LocalDate.now().minusDays(1));
+        LocalDate runDate = (LocalDate) context.getMessageHeader("runDate");
+        System.out.println(String.format("%s - Début du traitement", runDate.format(format1)));
+
+        if (runDate == null)
+          runDate = (LocalDate) context.getExtendedState().getVariables().get("runDate");
+        else
+          context.getExtendedState().getVariables().put("runDate", runDate);
+
+        Boolean runPartial = (Boolean) context.getMessageHeader("runPartial");
+
+        if (runPartial == null)
+          runPartial = (Boolean) context.getExtendedState().getVariables().get("runPartial");
+        else
+          context.getExtendedState().getVariables().put("runPartial", runPartial);
+
+        if (runDate.getDayOfMonth() == 1) {
+          sp500IndexService.loadSPCompositionAtDate(runDate);
         }
 
 
-        boolean wasYesterdayDayOff = wasYesterdayDayOff();
-
         //on est un jour de week-end (dimanche - lundi) ou hier était férié
-        if ((Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
-          || (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY)
-          || wasYesterdayDayOff) {
+        if (runDate.getDayOfWeek() == DayOfWeek.SUNDAY
+          || runDate.getDayOfWeek() == DayOfWeek.MONDAY
+          || wasDayBeforeRunDateDayDayOff(runDate)) {
           message = MessageBuilder
             .withPayload(LOADER_EVENTS.END_OF_WEEK_OR_DAY_OFF)
             .build();
@@ -141,7 +174,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
   }
 
 
-  private boolean wasYesterdayDayOff() {
+  private boolean wasDayBeforeRunDateDayDayOff(LocalDate runDate) {
     return false;
   }
 
@@ -172,15 +205,15 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
 
   public void loadMarket(final String exchange, StateContext<LOADER_STATES, LOADER_EVENTS> context) {
 
-    LocalDate yesterday = LocalDate.now().minusDays(1);
 
+    LocalDate runDate = (LocalDate) context.getExtendedState().getVariables().get("runDate");
     Collection<FirmEODQuoteTO> firmSaved = (List<FirmEODQuoteTO>) context.getExtendedState().getVariables().get("quotes");
     if (firmSaved == null) {
       firmSaved = new ArrayList<>();
     }
 
 
-    List<FirmEODQuoteTO> firms = firmService.getExchangeDataForDate(exchange, yesterday);
+    List<FirmEODQuoteTO> firms = firmService.getExchangeDataForDate(runDate, exchange);
     Iterable<FirmEODQuoteTO> newItemSaved = firmService.saveAllEODMarketQuotes(firms);
     newItemSaved.forEach(firmSaved::add);
 
@@ -196,39 +229,53 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
       @Override
       public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> context) {
 
-        Collection<FirmEODValuationTO> valuations = new ArrayList<>();
-        Collection<FirmEODHighlightsTO> highlights = new ArrayList<>();
-        Collection<FirmEODSharesStatsTO> sharesStats = new ArrayList<>();
 
-        LocalDate yesterday = LocalDate.now().minusDays(1);
+        LocalDate runDate = (LocalDate) context.getExtendedState().getVariables().get("runDate");
+        Boolean runPartial = (Boolean) context.getExtendedState().getVariables().get("runPartial");
+
         List<FirmEODQuoteTO> firms = (List<FirmEODQuoteTO>) context.getExtendedState().getVariables().get("quotes");
-
-        for (FirmEODQuoteTO firmEODQuoteTO : firms) {
-
-          if (!sp500IndexService.hasBeenListed(firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode()))
-            continue;
-
-          FirmEODValuationTO fVpost = firmService.getValuation(firmEODQuoteTO);
-          valuations.add(fVpost);
-
-          FirmEODHighlightsTO fHpost = firmService.getHighlights(firmEODQuoteTO);
-          highlights.add(fHpost);
-
-          FirmEODSharesStatsTO fSpost = firmService.getSharesStat(firmEODQuoteTO);
-          fSpost.setCode(firmEODQuoteTO.getCode());
-        }
-
-        firmService.saveAllHighlights(highlights);
-        firmService.saveAllValuations(valuations);
-        firmService.saveAllSharesStats(sharesStats);
         firmService.saveAllEODMarketQuotes(firms);
 
+        if (Boolean.FALSE == runPartial)
+          loadDetails(firms, runDate);
 
+        finalAction(runDate);
       }
     };
+  }
+
+  public void finalAction(LocalDate runDate) {
+
+    System.out.println(String.format("%s - Fin du traitement", runDate.format(format1)));
+  }
 
 
+  private void loadDetails(List<FirmEODQuoteTO> firms, LocalDate runDate) {
+
+
+    Collection<FirmEODValuationTO> valuations = new ArrayList<>();
+    Collection<FirmEODHighlightsTO> highlights = new ArrayList<>();
+    Collection<FirmEODSharesStatsTO> sharesStats = new ArrayList<>();
+
+    for (FirmEODQuoteTO firmEODQuoteTO : firms) {
+
+      if (!sp500IndexService.hasBeenListed(firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode()))
+        continue;
+
+      FirmEODValuationTO fVpost = firmService.getValuationByDateAndFirm(runDate, firmEODQuoteTO);
+      valuations.add(fVpost);
+
+      FirmEODHighlightsTO fHpost = firmService.getHighlightsByDateAndFirm(runDate, firmEODQuoteTO);
+      highlights.add(fHpost);
+
+      FirmEODSharesStatsTO fSpost = firmService.getSharesStatByDateAndFirm(runDate, firmEODQuoteTO);
+      sharesStats.add(fSpost);
+    }
+    firmService.saveAllHighlights(highlights);
+    firmService.saveAllValuations(valuations);
+    firmService.saveAllSharesStats(sharesStats);
   }
 
 
 }
+

@@ -2,55 +2,59 @@ package ch.nblotti.securities.index.sp500.respository.eod;
 
 class FirmDTO {
 
-  private Integer id;
 
-  private String code;
+  String Code;
 
-  private String exchange;
+  String Exchange;
 
-  private String name;
+  String Name;
 
-  private String sector;
+  String Sector;
 
-  private String industry;
+  String Industry;
 
   public FirmDTO() {
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getSector() {
-    return sector;
-  }
-
-  public void setSector(String sector) {
-    this.sector = sector;
-  }
-
-  public String getIndustry() {
-    return industry;
-  }
-
-  public void setIndustry(String industry) {
-    this.industry = industry;
-  }
-
-
   public String getCode() {
-    return code;
+    return Code;
+  }
+
+  public void setCode(String code) {
+    Code = code;
   }
 
   public String getExchange() {
-    return exchange;
+    return Exchange;
   }
 
+  public void setExchange(String exchange) {
+    Exchange = exchange;
+  }
 
+  public String getName() {
+    return Name;
+  }
+
+  public void setName(String name) {
+    Name = name;
+  }
+
+  public String getSector() {
+    return Sector;
+  }
+
+  public void setSector(String sector) {
+    Sector = sector;
+  }
+
+  public String getIndustry() {
+    return Industry;
+  }
+
+  public void setIndustry(String industry) {
+    Industry = industry;
+  }
 }
 
 

@@ -1,7 +1,5 @@
 package ch.nblotti.securities.index.sp500.service;
 
-import ch.nblotti.securities.firm.service.FirmService;
-import ch.nblotti.securities.firm.to.FirmEODQuoteTO;
 import ch.nblotti.securities.index.sp500.respository.IndexCompositionRepository;
 import ch.nblotti.securities.index.sp500.respository.eod.IndexSp500EODRepository;
 import ch.nblotti.securities.index.sp500.to.Sp500IndexSectorIndustryTO;
@@ -9,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -25,7 +21,7 @@ public class Sp500IndexService {
 
 
   public boolean hasBeenListed(String index, String code) {
-    List<Sp500IndexSectorIndustryTO> firm = indexCompositionRepository.findByIndexAndCodeFirm(index, code);
+    List<Sp500IndexSectorIndustryTO> firm = indexCompositionRepository.findByExchangeAndCodeFirm(index, code);
     return !firm.isEmpty();
   }
 

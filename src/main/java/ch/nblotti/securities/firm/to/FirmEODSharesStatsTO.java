@@ -32,7 +32,7 @@ public class FirmEODSharesStatsTO {
   public long sharesFloat;
   @Column(name = "percent_insiders")
   public float percentInsiders;
-  @Column(name = "percent_nstitutions")
+  @Column(name = "percent_institutions")
   public float percentInstitutions;
   @Column(name = "shares_short")
   public long sharesShort;

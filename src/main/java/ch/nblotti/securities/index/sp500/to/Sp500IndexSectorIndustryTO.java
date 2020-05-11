@@ -8,20 +8,18 @@ import java.time.LocalDate;
 public class Sp500IndexSectorIndustryTO {
 
   @Id
-  @Column(name = "id")
+  @SequenceGenerator(initialValue = 2000000, name = "sp500_composition_id_gen", sequenceName = "sp500_composition_id_seq", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sp500_composition_id_gen")
+  private Integer id;
 
-  @SequenceGenerator(initialValue = 2000000, name = "id_gen_sp_500", sequenceName = "sp500_id_seq", allocationSize = 1)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "id_gen_sp_500")
-  private Long id;
+  @Column(name = "date")
+  private LocalDate date;
 
   @Column(name = "codeFirm")
   private String codeFirm;
 
   @Column(name = "exchange")
   private String exchange;
-
-  @Column(name = "date")
-  private LocalDate date;
 
   @Column(name = "sector")
   private String sector;

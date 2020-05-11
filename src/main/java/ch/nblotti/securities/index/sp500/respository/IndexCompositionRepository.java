@@ -13,5 +13,5 @@ public interface IndexCompositionRepository extends CrudRepository<Sp500IndexSec
   void deleteByDate(LocalDate localDate);
 
 
-  List<Sp500IndexSectorIndustryTO> findByIndexAndCodeFirm(String index, String code);
+  List<Sp500IndexSectorIndustryTO> findByExchangeAndCodeFirm(String exchange, String codeFirm);
 }

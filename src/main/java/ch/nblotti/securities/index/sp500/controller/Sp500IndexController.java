@@ -2,26 +2,31 @@ package ch.nblotti.securities.index.sp500.controller;
 
 
 import ch.nblotti.securities.firm.service.FirmService;
-import ch.nblotti.securities.loader.LOADER_EVENTS;
-import ch.nblotti.securities.loader.LOADER_STATES;
 import ch.nblotti.securities.index.sp500.respository.Sp500IndexSectorIndustryRepository;
 import ch.nblotti.securities.index.sp500.service.Sp500IndexService;
-import ch.nblotti.securities.index.sp500.to.Sp500IndexSectorIndustryTO;
+import ch.nblotti.securities.loader.LOADER_EVENTS;
+import ch.nblotti.securities.loader.LOADER_STATES;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotNull;
+import javax.websocket.server.PathParam;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.temporal.TemporalAdjusters;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/index")
 public class Sp500IndexController {
 
+  private static final Logger logger = Logger.getLogger("Sp500IndexController");
+
+
+  @Autowired
+  private DateTimeFormatter format1;
 
   @Autowired
   Sp500IndexService sp500IndexService;
@@ -35,13 +40,7 @@ public class Sp500IndexController {
   @Autowired
   private StateMachine<LOADER_STATES, LOADER_EVENTS> sp500LoaderStateMachine;
 
-  @GetMapping(value = "/init")
-  public void init() {
-    sp500LoaderStateMachine.sendEvent(LOADER_EVENTS.EVENT_RECEIVED);
-    int a = 2;
-  }
-
-  @GetMapping(value = "/load")
+  @PostMapping(value = "/load")
   public void load(@RequestParam(name = "startyear", required = true) Integer startYear, @RequestParam(name = "endyear", required = false) Integer endYear, @RequestParam(name = "startmonth", required = true) Integer startMonth, @RequestParam(name = "endmonth", required = false) Integer endMonth) {
 
     if (endYear == null || endYear == 0)
@@ -58,56 +57,58 @@ public class Sp500IndexController {
       throw new IllegalArgumentException("End month or start month cannot be bigger than 12. start month cannot be bigger than end month");
 
 
-
-
+    Message<LOADER_EVENTS> message;
     int december = 12;
 
     for (int year = startYear; year <= endYear; year++) {
       if (year == endYear)
         december = endMonth;
       for (int month = startMonth; month <= december; month++) {
-        LocalDate localDate = localDate(year, month);
+        LocalDate localDate = LocalDate.of(year, month, 1);
+        localDate = localDate.withDayOfMonth(localDate.lengthOfMonth());
+        for (int i = 1; i <= localDate.with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth(); i++) {
+          LocalDate runDate = localDate.withDayOfMonth(i);
+
+          message = MessageBuilder
+            .withPayload(LOADER_EVENTS.EVENT_RECEIVED)
+            .setHeader("runDate", runDate)
+            .build();
+
+          startLoadingProcess(runDate, message);
+        }
 
 
-        //TODO NBL
       }
-
     }
   }
 
+  @PostMapping(value = "/load/{year}/{month}/{day}")
+  public void load(@PathVariable("year") String year, @PathVariable("month") String month, @PathVariable("day") String day) {
 
-  private LocalDate localDate(int year, int month) {
-    Calendar cal = Calendar.getInstance();
-    cal.set(Calendar.MONTH, month);
-    cal.set(Calendar.YEAR, year);
-    cal.set(Calendar.DAY_OF_MONTH, 1);
-    cal.set(Calendar.DATE, cal.getActualMaximum(Calendar.DATE));
+    LocalDate localDate = LocalDate.parse(String.format("%s-%s-%s", year, month, day), format1);
 
-    return convertToLocalDateViaInstant(cal.getTime());
+    Message<LOADER_EVENTS> message = MessageBuilder
+      .withPayload(LOADER_EVENTS.EVENT_RECEIVED)
+      .setHeader("runDate", localDate)
+      .build();
+
+
+    startLoadingProcess(localDate, message);
 
   }
 
-
-  private LocalDate convertToLocalDateViaInstant(Date dateToConvert) {
-    return dateToConvert.toInstant()
-      .atZone(ZoneId.systemDefault())
-      .toLocalDate();
+  private void startLoadingProcess(LocalDate localDate, Message<LOADER_EVENTS> message) {
+    sp500LoaderStateMachine.start();
+    boolean result = sp500LoaderStateMachine.sendEvent(message);
+    while (sp500LoaderStateMachine.getState().getId() != LOADER_STATES.DONE) {
+      try {
+        Thread.sleep(60000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      System.out.println(String.format("%s - %s", localDate, result));
+      sp500LoaderStateMachine.stop();
+    }
   }
-
-
-  @GetMapping(value = "/sp500/{sector}/{industry}/")
-  public Iterable<Sp500IndexSectorIndustryTO> sp500MarketCapBySectorIndustryDate(@NotNull @PathVariable String sector, @NotNull @PathVariable String industry, @NotNull @RequestParam(name = "startyear", required = true) Integer startYear, @RequestParam(name = "startmonth", required = true) Integer startMonth) {
-
-    DateTimeFormatter format1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    int month = 1;
-    if (startMonth != null)
-      month = startMonth;
-
-    LocalDate localDate = localDate(startYear, month);
-
-    return sp500IndexSectorIndustryRepository.findAllBySectorAndIndustryAndDateAfter(sector, industry, localDate);
-  }
-
 
 }

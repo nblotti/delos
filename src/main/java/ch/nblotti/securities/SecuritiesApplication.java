@@ -10,6 +10,8 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.format.DateTimeFormatter;
+
 @SpringBootApplication
 @EnableCaching
 @EnableScheduling
@@ -33,5 +35,12 @@ public class SecuritiesApplication {
   public ModelMapper modelMapper() {
     return new ModelMapper();
   }
+
+  @Bean
+  public DateTimeFormatter format1() {
+    return DateTimeFormatter.ofPattern("yyyy-MM-dd");
+  }
+
+  ;
 
 }

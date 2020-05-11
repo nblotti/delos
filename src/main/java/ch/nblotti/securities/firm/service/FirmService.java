@@ -41,24 +41,24 @@ public class FirmService {
   private FirmValuationRepository firmValuationRepository;
 
 
-  public FirmEODValuationTO getValuation(FirmEODQuoteTO firmEODQuoteTO) {
+  public FirmEODValuationTO getValuationByDateAndFirm(LocalDate runDate, FirmEODQuoteTO firmEODQuoteTO) {
 
-    return firmEODRepository.getYesterdayValuationForFirm(firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode());
+    return firmEODRepository.getValuationByDateAndFirm(runDate,firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode());
 
   }
 
-  public FirmEODHighlightsTO getHighlights(FirmEODQuoteTO firmEODQuoteTO) {
+  public FirmEODHighlightsTO getHighlightsByDateAndFirm(LocalDate runDate, FirmEODQuoteTO firmEODQuoteTO) {
 
-    return firmEODRepository.getYesterdayHighlightsForFirm(firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode());
+    return firmEODRepository.getHighlightsByDateAndFirm(runDate,firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode());
   }
 
-  public FirmEODSharesStatsTO getSharesStat(FirmEODQuoteTO firmEODQuoteTO) {
-    return firmEODRepository.getYesterdaySharesStatByExchangeAndFirm(firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode());
+  public FirmEODSharesStatsTO getSharesStatByDateAndFirm(LocalDate runDate, FirmEODQuoteTO firmEODQuoteTO) {
+    return firmEODRepository.getSharesStatByDateAndExchangeAndFirm(runDate,firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode());
   }
 
 
-  public List<FirmEODQuoteTO> getExchangeDataForDate(String exchange, LocalDate localDate) {
-    return firmEODRepository.getExchangeDataForDate(exchange, localDate);
+  public List<FirmEODQuoteTO> getExchangeDataForDate(LocalDate localDate,String exchange ) {
+    return firmEODRepository.getExchangeDataByDate(localDate,exchange );
   }
 
 
