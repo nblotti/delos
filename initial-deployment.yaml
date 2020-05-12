@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: nblotti
-          image: nblotti/security:v0.0.2
+          image: nblotti/security:v0.0.8
           ports:
             - containerPort: 8080
       imagePullSecrets:
-        - name: myregistrykey
+        - name: regcred
