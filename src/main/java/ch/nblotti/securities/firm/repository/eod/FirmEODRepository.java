@@ -163,8 +163,8 @@ public class FirmEODRepository {
           jsonContext = JsonPath.parse(response.getBody());
           cacheManager.getCache(EXCHANGE).put(key, jsonContext);
           networkErrorHandling = true;
-        } catch (ResourceAccessException ex) {
-          logger.log(Level.INFO, String.format("Network error, retrying\r\n%s", ex.getMessage()));
+        } catch (Exception ex) {
+          logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
         }
       }
     }

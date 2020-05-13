@@ -37,7 +37,6 @@ public class SecuritiesApplication {
   public RestTemplate restTemplate() {
     RestTemplate rt = new RestTemplate();
     rt.getMessageConverters().add(new StringHttpMessageConverter());
-    rt.getRequestFactory().
     return rt;
 
   }
