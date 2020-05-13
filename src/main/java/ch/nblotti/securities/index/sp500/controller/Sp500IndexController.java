@@ -10,15 +10,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.websocket.server.PathParam;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,9 +44,9 @@ public class Sp500IndexController {
   @Autowired
   private FirmService firmService;
 
-
   @Autowired
   private StateMachine<LOADER_STATES, LOADER_EVENTS> sp500LoaderStateMachine;
+
 
   @PostMapping(value = "/load")
   public void load(@RequestParam(name = "startyear", required = true) Integer startYear,
@@ -70,69 +74,15 @@ public class Sp500IndexController {
       throw new IllegalArgumentException("End month or start month cannot be bigger than 12. start month cannot be bigger than end month");
     }
 
-    int localStartDay;
 
+    ExecutorService executor = Executors.newFixedThreadPool(10);
 
-    if (startDay == null || startDay <= 0)
-      localStartDay = 1;
-    else
-      localStartDay = startDay;
+    LoaderThread loaderThread = new LoaderThread(sp500LoaderStateMachine, startYear, startMonth, startDay, endYear, endMonth, endDay);
 
-    int localEndDay = LocalDate.of(endYear, endMonth, 1).with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth();
-    if (endDay <= localEndDay)
-      localEndDay = endDay;
-
-
-    Message<LOADER_EVENTS> message;
-
-
-    for (int year = startYear; year <= endYear; year++) {
-
-      int loopstartMonth = 1;
-      int loopLastMonth = 12;
-
-      if (year == endYear)
-        loopLastMonth = endMonth;
-
-      if (year == startYear)
-        loopstartMonth = startMonth;
-
-      for (int month = loopstartMonth; month <= loopLastMonth; month++) {
-        LocalDate localDate = LocalDate.of(year, month, 1);
-        localDate = localDate.withDayOfMonth(localDate.lengthOfMonth());
-
-        int loopLastDay = 1;
-        int loopStartDay = 1;
-
-        loopLastDay = localDate.with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth();
-
-        if (year >= endYear && month >= endMonth) {
-          loopLastDay = localEndDay;
-        }
-
-        if (year == startYear && month == startMonth) {
-          loopStartDay = localStartDay;
-        }
-        for (int day = loopStartDay; day <= loopLastDay; day++) {
-          LocalDate runDate = localDate.withDayOfMonth(day);
-
-          if (runDate.isAfter(LocalDate.now().minusDays(1)))
-            return;
-
-          message = MessageBuilder
-            .withPayload(LOADER_EVENTS.EVENT_RECEIVED)
-            .setHeader("runDate", runDate)
-            .build();
-
-          //logger.log(Level.INFO, String.format("%s-%s-%s", year, month, day));
-          startLoadingProcess(runDate, message);
-        }
-
-
-      }
-    }
+    executor.submit(loaderThread);
   }
 
+/*
   @PostMapping(value = "/load/{year}/{month}/{day}")
   public void load(@PathVariable("year") String year, @PathVariable("month") String month, @PathVariable("day") String day) {
 
@@ -147,20 +97,7 @@ public class Sp500IndexController {
     startLoadingProcess(localDate, message);
 
   }
-
-  private void startLoadingProcess(LocalDate localDate, Message<LOADER_EVENTS> message) {
-    sp500LoaderStateMachine.start();
-    boolean result = sp500LoaderStateMachine.sendEvent(message);
-    while (sp500LoaderStateMachine.getState().getId() != LOADER_STATES.DONE) {
-      try {
-        Thread.sleep(60000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-      System.out.println(String.format("%s - %s", localDate, result));
-      sp500LoaderStateMachine.stop();
-    }
-  }
+*/
 
   @PostMapping(value = "/ping")
   public long ping() {
@@ -169,5 +106,110 @@ public class Sp500IndexController {
     ZoneOffset zoneOffSet = zone.getRules().getOffset(now);
     return LocalDate.now().atStartOfDay(zoneOffSet).toInstant().toEpochMilli();
   }
+
+
+  class LoaderThread implements Runnable {
+
+    private final StateMachine<LOADER_STATES, LOADER_EVENTS> sp500LoaderStateMachine;
+    private final Integer startYear;
+    private final Integer startMonth;
+    private final Integer startDay;
+    private final Integer endYear;
+    private final Integer endMonth;
+    private final Integer endDay;
+
+    public LoaderThread(StateMachine<LOADER_STATES, LOADER_EVENTS> sp500LoaderStateMachine, Integer startYear, Integer startMonth, Integer startDay, Integer endYear, Integer endMonth, Integer endDay) {
+      this.sp500LoaderStateMachine = sp500LoaderStateMachine;
+      this.startYear = startYear;
+      this.startMonth = startMonth;
+      this.startDay = startDay;
+      this.endYear = endYear;
+      this.endMonth = endMonth;
+      this.endDay = endDay;
+    }
+
+    private void startLoadingProcess(LocalDate localDate, Message<LOADER_EVENTS> message) {
+
+
+      sp500LoaderStateMachine.start();
+      boolean result = sp500LoaderStateMachine.sendEvent(message);
+      while (sp500LoaderStateMachine.getState().getId() != LOADER_STATES.DONE) {
+        try {
+          Thread.sleep(15000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      System.out.println(String.format("%s - %s", localDate, result));
+      sp500LoaderStateMachine.stop();
+    }
+
+    @Override
+    public void run() {
+
+
+      Message<LOADER_EVENTS> message;
+
+      int localStartDay;
+      if (startDay == null || startDay <= 0)
+        localStartDay = 1;
+      else
+        localStartDay = startDay;
+
+      int localEndDay = LocalDate.of(endYear, endMonth, 1).with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth();
+      if (endDay <= localEndDay)
+        localEndDay = endDay;
+
+
+      for (int year = startYear; year <= endYear; year++) {
+
+        int loopstartMonth = 1;
+        int loopLastMonth = 12;
+
+        if (year == endYear)
+          loopLastMonth = endMonth;
+
+        if (year == startYear)
+          loopstartMonth = startMonth;
+
+        for (int month = loopstartMonth; month <= loopLastMonth; month++) {
+          LocalDate localDate = LocalDate.of(year, month, 1);
+          localDate = localDate.withDayOfMonth(localDate.lengthOfMonth());
+
+          int loopLastDay = 1;
+          int loopStartDay = 1;
+
+          loopLastDay = localDate.with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth();
+
+          if (year >= endYear && month >= endMonth) {
+            loopLastDay = localEndDay;
+          }
+
+          if (year == startYear && month == startMonth) {
+            loopStartDay = localStartDay;
+          }
+          for (int day = loopStartDay; day <= loopLastDay; day++) {
+            LocalDate runDate = localDate.withDayOfMonth(day);
+
+            if (runDate.isAfter(LocalDate.now().minusDays(1)))
+              return;
+
+            message = MessageBuilder
+              .withPayload(LOADER_EVENTS.EVENT_RECEIVED)
+              .setHeader("runDate", runDate)
+              .build();
+
+            logger.log(Level.INFO, String.format("%s-%s-%s", year, month, day));
+            startLoadingProcess(runDate, message);
+          }
+
+
+        }
+      }
+    }
+
+
+  }
+
 
 }
