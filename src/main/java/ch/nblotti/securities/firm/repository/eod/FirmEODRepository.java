@@ -16,6 +16,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
@@ -23,11 +24,15 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Component
 public class FirmEODRepository {
 
+
+  private static final Logger logger = Logger.getLogger("FirmEODRepository");
 
   public static final String EXCHANGE = "exchange";
   public static final String EXCHANGE_JSON = "exchangelJson";
@@ -141,12 +146,7 @@ public class FirmEODRepository {
   public List<FirmEODQuoteTO> getExchangeDataByDate(LocalDate runDate, String exchange) {
 
     DocumentContext jsonContext = null;
-   /* String finalUrl;
-    if (exchange.equalsIgnoreCase("NYSE")) {
-      finalUrl = "http://localhost:8080/sp500date.json";
-    } else {
-      finalUrl = "http://localhost:8080/nasdaq.json";
-    }*/
+    boolean networkErrorHandling = false;
 
     String key = String.format("%s-%s-%s", FIRMS_FINANCIALS, runDate.format(format1), exchange);
 
@@ -156,10 +156,17 @@ public class FirmEODRepository {
     if (sVW != null) {
       jsonContext = (DocumentContext) sVW.get();
     } else {
-      String finalUrl = String.format(marketCap, exchange, apiKey, runDate.format(format1));
-      final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
-      jsonContext = JsonPath.parse(response.getBody());
-      cacheManager.getCache(EXCHANGE).put(key, jsonContext);
+      while (!networkErrorHandling) {
+        try {
+          String finalUrl = String.format(marketCap, exchange, apiKey, runDate.format(format1));
+          final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
+          jsonContext = JsonPath.parse(response.getBody());
+          cacheManager.getCache(EXCHANGE).put(key, jsonContext);
+          networkErrorHandling = true;
+        } catch (ResourceAccessException ex) {
+          logger.log(Level.INFO, String.format("Network error, retrying\r\n%s", ex.getMessage()));
+        }
+      }
     }
     List<FirmDTO> firms = Arrays.asList(jsonContext.read(sharesHistoryStr, FirmDTO[].class));
 
