@@ -80,7 +80,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
       .initial(LOADER_STATES.READY, initalAction())
       .state(LOADER_STATES.GET_DATES, getDates())
       .state(LOADER_STATES.LOAD_NYSE, loadNYSE())
-      .state(LOADER_STATES.LOAD_NASDAQ, loadNASDAQ())
+     // .state(LOADER_STATES.LOAD_NASDAQ, loadNASDAQ())
       .state(LOADER_STATES.SAVE_FIRM, saveFirms())
       .end(LOADER_STATES.DONE);
 
@@ -100,7 +100,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
       .source(LOADER_STATES.GET_DATES).target(LOADER_STATES.DONE).event(LOADER_EVENTS.END_OF_WEEK_OR_DAY_OFF)
       .and()
       .withLocal()
-      .source(LOADER_STATES.LOAD_NYSE).target(LOADER_STATES.LOAD_NASDAQ)
+      .source(LOADER_STATES.LOAD_NYSE).target(LOADER_STATES.SAVE_FIRM)
       .and()
       .withLocal()
       .source(LOADER_STATES.LOAD_NASDAQ).target(LOADER_STATES.SAVE_FIRM)
