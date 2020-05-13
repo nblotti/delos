@@ -135,7 +135,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
         Message<LOADER_EVENTS> message;
 
         LocalDate runDate = (LocalDate) context.getMessageHeader("runDate");
-        System.out.println(String.format("%s - Début du traitement", runDate.format(format1)));
+        logger.info(String.format("%s - Début du traitement", runDate.format(format1)));
 
         if (runDate == null)
           runDate = (LocalDate) context.getExtendedState().getVariables().get("runDate");
@@ -245,8 +245,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
   }
 
   public void finalAction(LocalDate runDate) {
-
-    System.out.println(String.format("%s - Fin du traitement", runDate.format(format1)));
+    logger.info(String.format("%s - Fin du traitement", runDate.format(format1)));
   }
 
 

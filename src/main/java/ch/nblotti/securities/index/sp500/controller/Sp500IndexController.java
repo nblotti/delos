@@ -23,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -110,6 +111,8 @@ public class Sp500IndexController {
 
   class LoaderThread implements Runnable {
 
+    private final Logger logger = Sp500IndexController.this.logger;
+
     private final StateMachine<LOADER_STATES, LOADER_EVENTS> sp500LoaderStateMachine;
     private final Integer startYear;
     private final Integer startMonth;
@@ -130,18 +133,27 @@ public class Sp500IndexController {
 
     private void startLoadingProcess(LocalDate localDate, Message<LOADER_EVENTS> message) {
 
-
+      long start = System.nanoTime();
       sp500LoaderStateMachine.start();
       boolean result = sp500LoaderStateMachine.sendEvent(message);
       while (sp500LoaderStateMachine.getState().getId() != LOADER_STATES.DONE) {
         try {
+          long temp = System.nanoTime();
+          long secs = TimeUnit.SECONDS.convert(temp - start, TimeUnit.NANOSECONDS);
+          logger.log(Level.INFO, String.format("%s - still running - temps : %s secondes", localDate, secs));
+
           Thread.sleep(15000);
+
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
       }
-      System.out.println(String.format("%s - %s", localDate, result));
       sp500LoaderStateMachine.stop();
+      long end = System.nanoTime();
+      long secs = TimeUnit.SECONDS.convert(end - start, TimeUnit.NANOSECONDS);
+
+      logger.log(Level.INFO, String.format("%s - %s - temps : %s secondes", localDate, result, secs));
+
     }
 
     @Override
