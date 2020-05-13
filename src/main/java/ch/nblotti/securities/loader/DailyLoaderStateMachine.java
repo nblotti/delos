@@ -155,8 +155,8 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
 
 
         //on est un jour de week-end (dimanche - lundi) ou hier était férié
-        if (runDate.getDayOfWeek() == DayOfWeek.SUNDAY
-          || runDate.getDayOfWeek() == DayOfWeek.MONDAY
+        if (runDate.getDayOfWeek() == DayOfWeek.SATURDAY
+          || runDate.getDayOfWeek() == DayOfWeek.SUNDAY
           || wasDayBeforeRunDateDayDayOff(runDate)) {
           message = MessageBuilder
             .withPayload(LOADER_EVENTS.END_OF_WEEK_OR_DAY_OFF)

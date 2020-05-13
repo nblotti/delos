@@ -124,8 +124,8 @@ public class Sp500IndexController {
             .setHeader("runDate", runDate)
             .build();
 
-          logger.log(Level.INFO, String.format("%s-%s-%s", year, month, day));
-          // startLoadingProcess(runDate, message);
+          //logger.log(Level.INFO, String.format("%s-%s-%s", year, month, day));
+          startLoadingProcess(runDate, message);
         }
 
 
