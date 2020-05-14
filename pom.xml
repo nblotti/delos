@@ -9,7 +9,7 @@
   </parent>
   <groupId>ch.nblotti</groupId>
   <artifactId>securities</artifactId>
-  <version>0.0.34-SNAPSHOT</version>
+  <version>0.0.34</version>
   <name>securities</name>
   <description>Security Manager</description>
 
@@ -25,7 +25,7 @@
     <url>https://github.com/nblotti/idp.git</url>
     <connection>scm:git:git://git@github.com/nblotti/securities.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/nblotti/securities.git</developerConnection>
-    <tag>securities-0.0.23</tag>
+    <tag>securities-0.0.34</tag>
   </scm>
 
 
