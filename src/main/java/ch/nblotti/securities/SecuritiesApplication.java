@@ -51,6 +51,5 @@ public class SecuritiesApplication {
     return DateTimeFormatter.ofPattern("yyyy-MM-dd");
   }
 
-  ;
 
 }

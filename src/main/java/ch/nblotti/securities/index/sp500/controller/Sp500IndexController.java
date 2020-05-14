@@ -2,16 +2,16 @@ package ch.nblotti.securities.index.sp500.controller;
 
 
 import ch.nblotti.securities.firm.service.FirmService;
-import ch.nblotti.securities.index.sp500.respository.Sp500IndexSectorIndustryRepository;
+import ch.nblotti.securities.firm.to.ConfigTO;
+import ch.nblotti.securities.index.sp500.respository.ConfigRepository;
 import ch.nblotti.securities.index.sp500.service.Sp500IndexService;
 import ch.nblotti.securities.loader.LOADER_EVENTS;
 import ch.nblotti.securities.loader.LOADER_STATES;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +24,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -36,9 +37,14 @@ public class Sp500IndexController {
 
   private static final Logger logger = Logger.getLogger("Sp500IndexController");
 
+  private static final int WORKER_THREAD_POOL = 1;
 
   @Autowired
   private DateTimeFormatter format1;
+
+
+  @Autowired
+  ConfigRepository configRepository;
 
   @Autowired
   Sp500IndexService sp500IndexService;
@@ -58,6 +64,8 @@ public class Sp500IndexController {
                    @RequestParam(name = "endday", required = false) Integer endDay
   ) {
 
+
+    ExecutorService executor = Executors.newSingleThreadExecutor();
     if (endYear == null || endYear == 0)
       endYear = startYear;
 
@@ -75,13 +83,47 @@ public class Sp500IndexController {
       throw new IllegalArgumentException("End month or start month cannot be bigger than 12. start month cannot be bigger than end month");
     }
 
-
-    ExecutorService executor = Executors.newFixedThreadPool(10);
-
     LoaderThread loaderThread = new LoaderThread(beanFactory, startYear, startMonth, startDay, endYear, endMonth, endDay);
 
     executor.submit(loaderThread);
   }
+
+
+  @Scheduled(cron = "${loader.cron.expression}")
+  public void scheduleFixedDelayTask() {
+
+    LocalDate runDate = LocalDate.now().minusDays(1);
+
+    Optional<ConfigTO> config = configRepository.findByCodeAndType("DAILY_JOB_RUNNING", runDate.format(format1));
+    if (config.isPresent()) {
+      logger.severe("Daily job already running - To jobs should not run at the same time");
+    } else {
+      logger.info("Starting daily eod security loading");
+      ConfigTO configTO = new ConfigTO("DAILY_JOB_RUNNING", runDate.format(format1), "1", "");
+      configRepository.save(configTO);
+
+      LoaderThread loaderThread = new LoaderThread(beanFactory, runDate.getYear(), runDate.getMonthValue(), runDate.getDayOfMonth(), runDate.getYear(), runDate.getMonthValue(), runDate.getDayOfMonth(), Boolean.FALSE);
+
+      ExecutorService executor = Executors.newSingleThreadExecutor();
+      executor.submit(loaderThread);
+      executor.shutdown();
+      try {
+        if (!executor.awaitTermination(1, TimeUnit.HOURS)) {
+          executor.shutdownNow();
+          logger.severe("Ending daily eod security loading- seems blocked");
+
+        }
+      } catch (InterruptedException e) {
+        logger.severe("Ending daily eod security loading");
+        logger.severe(e.getMessage());
+      } finally {
+        configRepository.deleteById(configTO.getId());
+        logger.info("Ending daily eod security loading");
+      }
+    }
+
+  }
+
 
   @PostMapping(value = "/ping")
   public long ping() {
@@ -103,8 +145,9 @@ public class Sp500IndexController {
     private final Integer endYear;
     private final Integer endMonth;
     private final Integer endDay;
+    private final Boolean runPartial;
 
-    public LoaderThread(BeanFactory beanFactory, Integer startYear, Integer startMonth, Integer startDay, Integer endYear, Integer endMonth, Integer endDay) {
+    public LoaderThread(BeanFactory beanFactory, Integer startYear, Integer startMonth, Integer startDay, Integer endYear, Integer endMonth, Integer endDay, Boolean runPartial) {
       this.beanFactory = beanFactory;
       this.startYear = startYear;
       this.startMonth = startMonth;
@@ -112,6 +155,11 @@ public class Sp500IndexController {
       this.endYear = endYear;
       this.endMonth = endMonth;
       this.endDay = endDay;
+      this.runPartial = runPartial;
+    }
+
+    public LoaderThread(BeanFactory beanFactory, Integer startYear, Integer startMonth, Integer startDay, Integer endYear, Integer endMonth, Integer endDay) {
+      this(beanFactory, startYear, startMonth, startDay, endYear, endMonth, endDay, Boolean.TRUE);
     }
 
     private void startLoadingProcess(LocalDate localDate, Message<LOADER_EVENTS> message) {
@@ -193,6 +241,7 @@ public class Sp500IndexController {
             message = MessageBuilder
               .withPayload(LOADER_EVENTS.EVENT_RECEIVED)
               .setHeader("runDate", runDate)
+              .setHeader("runPartial", runPartial)
               .build();
 
             logger.log(Level.INFO, String.format("%s-%s-%s", year, month, day));
