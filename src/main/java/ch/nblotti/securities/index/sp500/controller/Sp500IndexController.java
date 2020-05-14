@@ -6,6 +6,7 @@ import ch.nblotti.securities.index.sp500.respository.Sp500IndexSectorIndustryRep
 import ch.nblotti.securities.index.sp500.service.Sp500IndexService;
 import ch.nblotti.securities.loader.LOADER_EVENTS;
 import ch.nblotti.securities.loader.LOADER_STATES;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -41,16 +42,12 @@ public class Sp500IndexController {
 
   @Autowired
   Sp500IndexService sp500IndexService;
-  @Autowired
-  Sp500IndexSectorIndustryRepository sp500IndexSectorIndustryRepository;
 
   @Autowired
   private FirmService firmService;
 
   @Autowired
-
-  private StateMachine<LOADER_STATES, LOADER_EVENTS> sp500LoaderStateMachine;
-
+  private BeanFactory beanFactory;
 
   @PostMapping(value = "/load")
   public void load(@RequestParam(name = "startyear", required = true) Integer startYear,
@@ -81,27 +78,10 @@ public class Sp500IndexController {
 
     ExecutorService executor = Executors.newFixedThreadPool(10);
 
-    LoaderThread loaderThread = new LoaderThread(sp500LoaderStateMachine, startYear, startMonth, startDay, endYear, endMonth, endDay);
+    LoaderThread loaderThread = new LoaderThread(beanFactory, startYear, startMonth, startDay, endYear, endMonth, endDay);
 
     executor.submit(loaderThread);
   }
-
-/*
-  @PostMapping(value = "/load/{year}/{month}/{day}")
-  public void load(@PathVariable("year") String year, @PathVariable("month") String month, @PathVariable("day") String day) {
-
-    LocalDate localDate = LocalDate.parse(String.format("%s-%s-%s", year, month, day), format1);
-
-    Message<LOADER_EVENTS> message = MessageBuilder
-      .withPayload(LOADER_EVENTS.EVENT_RECEIVED)
-      .setHeader("runDate", localDate)
-      .build();
-
-
-    startLoadingProcess(localDate, message);
-
-  }
-*/
 
   @PostMapping(value = "/ping")
   public long ping() {
@@ -116,7 +96,7 @@ public class Sp500IndexController {
 
     private final Logger logger = Sp500IndexController.this.logger;
 
-    private final StateMachine<LOADER_STATES, LOADER_EVENTS> sp500LoaderStateMachine;
+    private final BeanFactory beanFactory;
     private final Integer startYear;
     private final Integer startMonth;
     private final Integer startDay;
@@ -124,8 +104,8 @@ public class Sp500IndexController {
     private final Integer endMonth;
     private final Integer endDay;
 
-    public LoaderThread(StateMachine<LOADER_STATES, LOADER_EVENTS> sp500LoaderStateMachine, Integer startYear, Integer startMonth, Integer startDay, Integer endYear, Integer endMonth, Integer endDay) {
-      this.sp500LoaderStateMachine = sp500LoaderStateMachine;
+    public LoaderThread(BeanFactory beanFactory, Integer startYear, Integer startMonth, Integer startDay, Integer endYear, Integer endMonth, Integer endDay) {
+      this.beanFactory = beanFactory;
       this.startYear = startYear;
       this.startMonth = startMonth;
       this.startDay = startDay;
@@ -137,6 +117,7 @@ public class Sp500IndexController {
     private void startLoadingProcess(LocalDate localDate, Message<LOADER_EVENTS> message) {
 
       long start = System.nanoTime();
+      StateMachine<LOADER_STATES, LOADER_EVENTS> sp500LoaderStateMachine = (StateMachine<LOADER_STATES, LOADER_EVENTS>) beanFactory.getBean("stateMachine");
       sp500LoaderStateMachine.start();
       boolean result = sp500LoaderStateMachine.sendEvent(message);
       while (sp500LoaderStateMachine.getState().getId() != LOADER_STATES.DONE) {

@@ -133,7 +133,7 @@ public class FirmEODRepository {
 
 
   //@Scheduled(cron = "0 0 1 * * MON")
-  @Scheduled(fixedRate = 10800000)
+  @Scheduled(fixedRate = 90000)
   public void clearCache() {
     cacheManager.getCache(FIRMS_FINANCIALS).clear();
 
