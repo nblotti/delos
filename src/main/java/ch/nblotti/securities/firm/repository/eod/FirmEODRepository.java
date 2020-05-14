@@ -147,25 +147,14 @@ public class FirmEODRepository {
 
     DocumentContext jsonContext = null;
     boolean networkErrorHandling = false;
-
-    String key = String.format("%s-%s-%s", FIRMS_FINANCIALS, runDate.format(format1), exchange);
-
-    Cache.ValueWrapper sVW = cacheManager.getCache(EXCHANGE).get(key);
-
-
-    if (sVW != null) {
-      jsonContext = (DocumentContext) sVW.get();
-    } else {
-      while (!networkErrorHandling) {
-        try {
-          String finalUrl = String.format(marketCap, exchange, apiKey, runDate.format(format1));
-          final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
-          jsonContext = JsonPath.parse(response.getBody());
-          cacheManager.getCache(EXCHANGE).put(key, jsonContext);
-          networkErrorHandling = true;
-        } catch (Exception ex) {
-          logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
-        }
+    while (!networkErrorHandling) {
+      try {
+        String finalUrl = String.format(marketCap, exchange, apiKey, runDate.format(format1));
+        final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
+        jsonContext = JsonPath.parse(response.getBody());
+        networkErrorHandling = true;
+      } catch (Exception ex) {
+        logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
       }
     }
     List<FirmDTO> firms = Arrays.asList(jsonContext.read(sharesHistoryStr, FirmDTO[].class));
