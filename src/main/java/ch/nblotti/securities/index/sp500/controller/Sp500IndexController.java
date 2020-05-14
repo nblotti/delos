@@ -7,6 +7,8 @@ import ch.nblotti.securities.index.sp500.service.Sp500IndexService;
 import ch.nblotti.securities.loader.LOADER_EVENTS;
 import ch.nblotti.securities.loader.LOADER_STATES;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
@@ -46,6 +48,7 @@ public class Sp500IndexController {
   private FirmService firmService;
 
   @Autowired
+
   private StateMachine<LOADER_STATES, LOADER_EVENTS> sp500LoaderStateMachine;
 
 

@@ -9,8 +9,10 @@ import ch.nblotti.securities.index.sp500.service.Sp500IndexService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateContext;
@@ -32,6 +34,7 @@ import java.util.logging.Logger;
 
 @Configuration
 @EnableStateMachine
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<LOADER_STATES, LOADER_EVENTS> {
 
 
