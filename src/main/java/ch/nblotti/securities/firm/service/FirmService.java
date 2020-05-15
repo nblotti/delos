@@ -66,7 +66,7 @@ public class FirmService {
     return firmQuoteRepository.saveAll(firmsTOs);
   }
 
-
+/*
   public void saveAllValuations(Collection<FirmEODValuationTO> valuations) {
     firmValuationRepository.saveAll(valuations);
   }
@@ -79,5 +79,16 @@ public class FirmService {
     firmSharesStatsRepository.saveAll(sharesStats);
   }
 
+*/
+  public <S extends FirmEODHighlightsTO> S save(S entity) {
+    return firmHighlightsRepository.save(entity);
+  }
 
+  public <S extends FirmEODShareStatsTO> S save(S entity) {
+    return firmSharesStatsRepository.save(entity);
+  }
+
+  public <S extends FirmEODValuationTO> S save(S entity) {
+    return firmValuationRepository.save(entity);
+  }
 }

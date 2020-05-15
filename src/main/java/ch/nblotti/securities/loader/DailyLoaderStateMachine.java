@@ -254,28 +254,20 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
 
   private void loadDetails(List<FirmEODQuoteTO> firms, LocalDate runDate) {
 
-
-    Collection<FirmEODValuationTO> valuations = new ArrayList<>();
-    Collection<FirmEODHighlightsTO> highlights = new ArrayList<>();
-    Collection<FirmEODShareStatsTO> sharesStats = new ArrayList<>();
-
     for (FirmEODQuoteTO firmEODQuoteTO : firms) {
 
       if (!sp500IndexService.hasBeenListed(firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode()))
         continue;
 
       FirmEODValuationTO fVpost = firmService.getValuationByDateAndFirm(runDate, firmEODQuoteTO);
-      valuations.add(fVpost);
+      firmService.save(fVpost);
 
       FirmEODHighlightsTO fHpost = firmService.getHighlightsByDateAndFirm(runDate, firmEODQuoteTO);
-      highlights.add(fHpost);
+      firmService.save(fHpost);
 
       FirmEODShareStatsTO fSpost = firmService.getSharesStatByDateAndFirm(runDate, firmEODQuoteTO);
-      sharesStats.add(fSpost);
+      firmService.save(fSpost);
     }
-    firmService.saveAllHighlights(highlights);
-    firmService.saveAllValuations(valuations);
-    firmService.saveAllSharesStats(sharesStats);
   }
 
 
