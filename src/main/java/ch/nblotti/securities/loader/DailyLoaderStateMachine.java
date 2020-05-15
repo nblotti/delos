@@ -3,7 +3,7 @@ package ch.nblotti.securities.loader;
 import ch.nblotti.securities.firm.service.FirmService;
 import ch.nblotti.securities.firm.to.FirmEODHighlightsTO;
 import ch.nblotti.securities.firm.to.FirmEODQuoteTO;
-import ch.nblotti.securities.firm.to.FirmEODSharesStatsTO;
+import ch.nblotti.securities.firm.to.FirmEODShareStatsTO;
 import ch.nblotti.securities.firm.to.FirmEODValuationTO;
 import ch.nblotti.securities.index.sp500.service.Sp500IndexService;
 import org.modelmapper.ModelMapper;
@@ -257,7 +257,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
 
     Collection<FirmEODValuationTO> valuations = new ArrayList<>();
     Collection<FirmEODHighlightsTO> highlights = new ArrayList<>();
-    Collection<FirmEODSharesStatsTO> sharesStats = new ArrayList<>();
+    Collection<FirmEODShareStatsTO> sharesStats = new ArrayList<>();
 
     for (FirmEODQuoteTO firmEODQuoteTO : firms) {
 
@@ -270,7 +270,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
       FirmEODHighlightsTO fHpost = firmService.getHighlightsByDateAndFirm(runDate, firmEODQuoteTO);
       highlights.add(fHpost);
 
-      FirmEODSharesStatsTO fSpost = firmService.getSharesStatByDateAndFirm(runDate, firmEODQuoteTO);
+      FirmEODShareStatsTO fSpost = firmService.getSharesStatByDateAndFirm(runDate, firmEODQuoteTO);
       sharesStats.add(fSpost);
     }
     firmService.saveAllHighlights(highlights);

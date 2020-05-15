@@ -1,13 +1,12 @@
 package ch.nblotti.securities.firm.repository;
 
-import ch.nblotti.securities.firm.to.FirmEODHighlightsTO;
-import ch.nblotti.securities.firm.to.FirmEODSharesStatsTO;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
+import ch.nblotti.securities.firm.to.FirmEODShareStatsTO;
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 
-@Repository
-public interface FirmSharesStatsRepository extends CrudRepository<FirmEODSharesStatsTO, Long> {
+@RepositoryRestResource(path = "firmsharestats")
+public interface FirmSharesStatsRepository extends PagingAndSortingRepository<FirmEODShareStatsTO, Integer> {
 
 
 }

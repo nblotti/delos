@@ -2,7 +2,7 @@ package ch.nblotti.securities.firm.repository.eod;
 
 import ch.nblotti.securities.firm.to.FirmEODHighlightsTO;
 import ch.nblotti.securities.firm.to.FirmEODQuoteTO;
-import ch.nblotti.securities.firm.to.FirmEODSharesStatsTO;
+import ch.nblotti.securities.firm.to.FirmEODShareStatsTO;
 import ch.nblotti.securities.firm.to.FirmEODValuationTO;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -11,12 +11,10 @@ import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
@@ -71,12 +69,21 @@ public class FirmEODRepository {
 
     String key = String.format("%s-%s-%s", FIRMS_FINANCIALS, runDate.format(format1), symbol);
 
-
+    logger.log(Level.INFO, String.format("%s - Loading valuation details for %s %s ",runDate.format(format1),exchange,symbol));
     if (cacheManager.getCache(FIRMS_FINANCIALS).get(key) == null) {
-      String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
-      final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
-      DocumentContext content = JsonPath.parse(response.getBody());
-      cacheManager.getCache(FIRMS_FINANCIALS).put(key, content);
+
+      boolean networkErrorHandling = false;
+      while (!networkErrorHandling) {
+        try {
+          String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
+          final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
+          DocumentContext content = JsonPath.parse(response.getBody());
+          cacheManager.getCache(FIRMS_FINANCIALS).put(key, content);
+          networkErrorHandling = true;
+        } catch (Exception ex) {
+          logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
+        }
+      }
     }
     ValuationDTO valuationDTO = ((DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(key).get()).read(valuationStr, ValuationDTO.class);
 
@@ -91,15 +98,25 @@ public class FirmEODRepository {
 
   public FirmEODHighlightsTO getHighlightsByDateAndFirm(LocalDate runDate, String exchange, String symbol) {
 
+    logger.log(Level.INFO, String.format("%s - Loading highlights details for %s %s ",runDate.format(format1),exchange,symbol));
+
     String key = String.format("%s-%s-%s", FIRMS_FINANCIALS, runDate.format(format1), symbol);
 
     DocumentContext jsonContext = (DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(key).get();
 
     if (jsonContext == null) {
       String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
-      final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
-      jsonContext = JsonPath.parse(response.getBody());
-      cacheManager.getCache(FIRMS_FINANCIALS).put(key, jsonContext);
+      boolean networkErrorHandling = false;
+      while (!networkErrorHandling) {
+        try {
+          final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
+          jsonContext = JsonPath.parse(response.getBody());
+          cacheManager.getCache(FIRMS_FINANCIALS).put(key, jsonContext);
+          networkErrorHandling = true;
+        } catch (Exception ex) {
+          logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
+        }
+      }
     }
     FirmHighlightsDTO firmHighlightsDTO = jsonContext.read(highlightStr, FirmHighlightsDTO.class);
     FirmEODHighlightsTO fHpost = modelMapper.map(firmHighlightsDTO, FirmEODHighlightsTO.class);
@@ -110,20 +127,30 @@ public class FirmEODRepository {
     return fHpost;
   }
 
-  public FirmEODSharesStatsTO getSharesStatByDateAndExchangeAndFirm(LocalDate runDate, String exchange, String symbol) {
+  public FirmEODShareStatsTO getSharesStatByDateAndExchangeAndFirm(LocalDate runDate, String exchange, String symbol) {
+
+    logger.log(Level.INFO, String.format("%s - Loading ShareStats details for %s %s ",runDate.format(format1),exchange,symbol));
 
     String key = String.format("%s-%s-%s", FIRMS_FINANCIALS, runDate.format(format1), symbol);
 
     DocumentContext jsonContext = (DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(key).get();
     if (jsonContext == null) {
-      String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
-      final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
-      jsonContext = JsonPath.parse(response.getBody());
-      cacheManager.getCache(FIRMS_FINANCIALS).put(key, jsonContext);
+      boolean networkErrorHandling = false;
+      while (!networkErrorHandling) {
+        try {
+          String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
+          final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
+          jsonContext = JsonPath.parse(response.getBody());
+          cacheManager.getCache(FIRMS_FINANCIALS).put(key, jsonContext);
+          networkErrorHandling = true;
+        } catch (Exception ex) {
+          logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
+        }
+      }
     }
     SharesStatsDTO sharesStatsDTO = jsonContext.read(sharesStatStr, SharesStatsDTO.class);
 
-    FirmEODSharesStatsTO fSpost = modelMapper.map(sharesStatsDTO, FirmEODSharesStatsTO.class);
+    FirmEODShareStatsTO fSpost = modelMapper.map(sharesStatsDTO, FirmEODShareStatsTO.class);
     fSpost.setExchange(exchange);
     fSpost.setDate(runDate);
     fSpost.setCode(symbol);
@@ -232,12 +259,12 @@ public class FirmEODRepository {
   @PostConstruct
   public void initShareStatsMapper() {
 
-    Converter<SharesStatsDTO, FirmEODSharesStatsTO> toUppercase = new AbstractConverter<SharesStatsDTO, FirmEODSharesStatsTO>() {
+    Converter<SharesStatsDTO, FirmEODShareStatsTO> toUppercase = new AbstractConverter<SharesStatsDTO, FirmEODShareStatsTO>() {
 
       @Override
-      protected FirmEODSharesStatsTO convert(SharesStatsDTO sharesStatsDTO) {
-        FirmEODSharesStatsTO firmEODSharesStatsTO = new FirmEODSharesStatsTO();
-        return firmEODSharesStatsTO;
+      protected FirmEODShareStatsTO convert(SharesStatsDTO sharesStatsDTO) {
+        FirmEODShareStatsTO firmEODShareStatsTO = new FirmEODShareStatsTO();
+        return firmEODShareStatsTO;
       }
     };
 

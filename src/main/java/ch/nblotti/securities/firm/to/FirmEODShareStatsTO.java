@@ -7,12 +7,12 @@ import java.util.Date;
 
 @Entity
 @Table(name = "FIRM_EOD_SHARE_STATS")
-public class FirmEODSharesStatsTO {
+public class FirmEODShareStatsTO {
 
 
   @Id
-  @SequenceGenerator(initialValue = 2000000, name = "firm_shares_stat_id_gen_firm", sequenceName = "firm_eod_shares_stat_id_seq", allocationSize = 1)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "firm_shares_stat_id_gen_firm")
+  @SequenceGenerator(initialValue = 2000000, name = "firm_share_stats_id_gen_firm", sequenceName = "firm_eod_share_stats_id_seq", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "firm_share_stats_id_gen_firm")
   private Integer id;
 
 

@@ -55,6 +55,16 @@ public class Sp500IndexController {
   @Autowired
   private BeanFactory beanFactory;
 
+  @PostMapping(value = "/loadall")
+  public void loadAll(@RequestParam(name = "startyear", required = true) Integer startYear,
+                      @RequestParam(name = "endyear", required = false) Integer endYear,
+                      @RequestParam(name = "startmonth", required = true) Integer startMonth,
+                      @RequestParam(name = "endmonth", required = false) Integer endMonth,
+                      @RequestParam(name = "startday", required = false) Integer startDay,
+                      @RequestParam(name = "endday", required = false) Integer endDay) {
+    startLoad(startYear, endYear, startMonth, endMonth, startDay, endDay, Boolean.FALSE);
+  }
+
   @PostMapping(value = "/load")
   public void load(@RequestParam(name = "startyear", required = true) Integer startYear,
                    @RequestParam(name = "endyear", required = false) Integer endYear,
@@ -65,6 +75,10 @@ public class Sp500IndexController {
   ) {
 
 
+    startLoad(startYear, endYear, startMonth, endMonth, startDay, endDay, Boolean.TRUE);
+  }
+
+  private void startLoad(Integer startYear, Integer endYear, Integer startMonth, Integer endMonth, Integer startDay, Integer endDay, Boolean runPartial) {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     if (endYear == null || endYear == 0)
       endYear = startYear;
@@ -83,7 +97,7 @@ public class Sp500IndexController {
       throw new IllegalArgumentException("End month or start month cannot be bigger than 12. start month cannot be bigger than end month");
     }
 
-    LoaderThread loaderThread = new LoaderThread(beanFactory, startYear, startMonth, startDay, endYear, endMonth, endDay);
+    LoaderThread loaderThread = new LoaderThread(beanFactory, startYear, startMonth, startDay, endYear, endMonth, endDay, runPartial);
 
     executor.submit(loaderThread);
   }

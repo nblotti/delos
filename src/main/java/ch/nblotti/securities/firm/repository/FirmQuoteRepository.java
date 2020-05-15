@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.Collection;
 
-@RepositoryRestResource(path = "firmquotes")
+@RepositoryRestResource(path = "firmquote")
 public interface FirmQuoteRepository  extends PagingAndSortingRepository<FirmEODQuoteTO, Integer> {
 
   public Collection<FirmEODQuoteTO> findAllByDate(LocalDate date);

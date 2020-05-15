@@ -5,7 +5,7 @@ import ch.nblotti.securities.firm.repository.*;
 import ch.nblotti.securities.firm.repository.eod.FirmEODRepository;
 import ch.nblotti.securities.firm.to.FirmEODHighlightsTO;
 import ch.nblotti.securities.firm.to.FirmEODQuoteTO;
-import ch.nblotti.securities.firm.to.FirmEODSharesStatsTO;
+import ch.nblotti.securities.firm.to.FirmEODShareStatsTO;
 import ch.nblotti.securities.firm.to.FirmEODValuationTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,7 +52,7 @@ public class FirmService {
     return firmEODRepository.getHighlightsByDateAndFirm(runDate,firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode());
   }
 
-  public FirmEODSharesStatsTO getSharesStatByDateAndFirm(LocalDate runDate, FirmEODQuoteTO firmEODQuoteTO) {
+  public FirmEODShareStatsTO getSharesStatByDateAndFirm(LocalDate runDate, FirmEODQuoteTO firmEODQuoteTO) {
     return firmEODRepository.getSharesStatByDateAndExchangeAndFirm(runDate,firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode());
   }
 
@@ -75,7 +75,7 @@ public class FirmService {
     firmHighlightsRepository.saveAll(highlights);
   }
 
-  public void saveAllSharesStats(Collection<FirmEODSharesStatsTO> sharesStats) {
+  public void saveAllSharesStats(Collection<FirmEODShareStatsTO> sharesStats) {
     firmSharesStatsRepository.saveAll(sharesStats);
   }
 
