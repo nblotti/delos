@@ -11,9 +11,9 @@ import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.CacheManager;
+import org.springframework.cache.Cache;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,6 +37,8 @@ public class FirmEODRepository {
   public static final String FIRMS_FINANCIALS = "firms";
   public static final String FIRMS_FINANCIALS_JSON = "firmsFinancialJson";
 
+  @Autowired
+  Cache cacheOne;
 
   @Autowired
   private DateTimeFormatter format1;
@@ -61,110 +63,98 @@ public class FirmEODRepository {
   private ModelMapper modelMapper;
 
 
-  @Autowired
-  private CacheManager cacheManager;
-
-
   public FirmEODValuationTO getValuationByDateAndFirm(LocalDate runDate, String exchange, String symbol) {
 
-    String key = String.format("%s-%s-%s", FIRMS_FINANCIALS, runDate.format(format1), symbol);
 
-    logger.log(Level.INFO, String.format("%s - Loading valuation details for %s %s ",runDate.format(format1),exchange,symbol));
-    if (cacheManager.getCache(FIRMS_FINANCIALS).get(key) == null) {
+    logger.log(Level.INFO, String.format("%s - Loading valuation details for %s %s ", runDate.format(format1), exchange, symbol));
 
-      boolean networkErrorHandling = false;
-      while (!networkErrorHandling) {
-        try {
-          String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
-          final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
-          DocumentContext content = JsonPath.parse(response.getBody());
-          cacheManager.getCache(FIRMS_FINANCIALS).put(key, content);
-          networkErrorHandling = true;
-        } catch (Exception ex) {
-          logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
-        }
+    boolean networkErrorHandling = false;
+    while (!networkErrorHandling) {
+      try {
+        String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
+        final ResponseEntity<String> response = getStringResponseEntity(finalUrl);
+        DocumentContext content = JsonPath.parse(response.getBody());
+        ValuationDTO valuationDTO = content.read(valuationStr, ValuationDTO.class);
+
+        FirmEODValuationTO fVpost = modelMapper.map(valuationDTO, FirmEODValuationTO.class);
+        fVpost.setExchange(exchange);
+        fVpost.setDate(runDate);
+        fVpost.setCode(symbol);
+        return fVpost;
+      } catch (Exception ex) {
+        logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
       }
     }
-    ValuationDTO valuationDTO = ((DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(key).get()).read(valuationStr, ValuationDTO.class);
 
-    FirmEODValuationTO fVpost = modelMapper.map(valuationDTO, FirmEODValuationTO.class);
-    fVpost.setExchange(exchange);
-    fVpost.setDate(runDate);
-    fVpost.setCode(symbol);
 
-    return fVpost;
+    throw new IllegalStateException();
 
   }
 
   public FirmEODHighlightsTO getHighlightsByDateAndFirm(LocalDate runDate, String exchange, String symbol) {
 
-    logger.log(Level.INFO, String.format("%s - Loading highlights details for %s %s ",runDate.format(format1),exchange,symbol));
+    logger.log(Level.INFO, String.format("%s - Loading highlights details for %s %s ", runDate.format(format1), exchange, symbol));
 
-    String key = String.format("%s-%s-%s", FIRMS_FINANCIALS, runDate.format(format1), symbol);
 
-    DocumentContext jsonContext = (DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(key).get();
+    String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
+    boolean networkErrorHandling = false;
+    while (!networkErrorHandling) {
+      try {
+        final ResponseEntity<String> response = getStringResponseEntity(finalUrl);
+        DocumentContext jsonContext = JsonPath.parse(response.getBody());
+        FirmHighlightsDTO firmHighlightsDTO = jsonContext.read(highlightStr, FirmHighlightsDTO.class);
+        FirmEODHighlightsTO fHpost = modelMapper.map(firmHighlightsDTO, FirmEODHighlightsTO.class);
+        fHpost.setExchange(exchange);
+        fHpost.setDate(runDate);
+        fHpost.setCode(symbol);
 
-    if (jsonContext == null) {
-      String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
-      boolean networkErrorHandling = false;
-      while (!networkErrorHandling) {
-        try {
-          final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
-          jsonContext = JsonPath.parse(response.getBody());
-          cacheManager.getCache(FIRMS_FINANCIALS).put(key, jsonContext);
-          networkErrorHandling = true;
-        } catch (Exception ex) {
-          logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
-        }
+        return fHpost;
+      } catch (Exception ex) {
+        logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
       }
     }
-    FirmHighlightsDTO firmHighlightsDTO = jsonContext.read(highlightStr, FirmHighlightsDTO.class);
-    FirmEODHighlightsTO fHpost = modelMapper.map(firmHighlightsDTO, FirmEODHighlightsTO.class);
-    fHpost.setExchange(exchange);
-    fHpost.setDate(runDate);
-    fHpost.setCode(symbol);
+    throw new IllegalStateException();
 
-    return fHpost;
+  }
+
+  private ResponseEntity<String> getStringResponseEntity(String finalUrl) {
+    if (cacheOne.get(finalUrl.hashCode()) == null) {
+      ResponseEntity<String> entity = restTemplate.getForEntity(finalUrl, String.class);
+      cacheOne.put(finalUrl.hashCode(), entity);
+      return entity;
+    }
+
+    return (ResponseEntity<String>) cacheOne.get(finalUrl.hashCode()).get();
   }
 
   public FirmEODShareStatsTO getSharesStatByDateAndExchangeAndFirm(LocalDate runDate, String exchange, String symbol) {
 
-    logger.log(Level.INFO, String.format("%s - Loading ShareStats details for %s %s ",runDate.format(format1),exchange,symbol));
+    logger.log(Level.INFO, String.format("%s - Loading ShareStats details for %s %s ", runDate.format(format1), exchange, symbol));
 
-    String key = String.format("%s-%s-%s", FIRMS_FINANCIALS, runDate.format(format1), symbol);
 
-    DocumentContext jsonContext = (DocumentContext) cacheManager.getCache(FIRMS_FINANCIALS).get(key).get();
-    if (jsonContext == null) {
-      boolean networkErrorHandling = false;
-      while (!networkErrorHandling) {
-        try {
-          String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
-          final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
-          jsonContext = JsonPath.parse(response.getBody());
-          cacheManager.getCache(FIRMS_FINANCIALS).put(key, jsonContext);
-          networkErrorHandling = true;
-        } catch (Exception ex) {
-          logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
-        }
+    boolean networkErrorHandling = false;
+    while (!networkErrorHandling) {
+      try {
+        String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
+        final ResponseEntity<String> response = getStringResponseEntity(finalUrl);
+        DocumentContext jsonContext = JsonPath.parse(response.getBody());
+
+        SharesStatsDTO sharesStatsDTO = jsonContext.read(sharesStatStr, SharesStatsDTO.class);
+
+        FirmEODShareStatsTO fSpost = modelMapper.map(sharesStatsDTO, FirmEODShareStatsTO.class);
+        fSpost.setExchange(exchange);
+        fSpost.setDate(runDate);
+        fSpost.setCode(symbol);
+
+        return fSpost;
+      } catch (Exception ex) {
+        logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
       }
     }
-    SharesStatsDTO sharesStatsDTO = jsonContext.read(sharesStatStr, SharesStatsDTO.class);
-
-    FirmEODShareStatsTO fSpost = modelMapper.map(sharesStatsDTO, FirmEODShareStatsTO.class);
-    fSpost.setExchange(exchange);
-    fSpost.setDate(runDate);
-    fSpost.setCode(symbol);
-
-    return fSpost;
-  }
-
-
-  //@Scheduled(cron = "0 0 1 * * MON")
-  @Scheduled(fixedRate = 90000)
-  public void clearCache() {
-    cacheManager.getCache(FIRMS_FINANCIALS).clear();
+    throw new IllegalStateException();
 
   }
+
 
   @Autowired
   private RestTemplate restTemplate;
@@ -177,7 +167,7 @@ public class FirmEODRepository {
     while (!networkErrorHandling) {
       try {
         String finalUrl = String.format(marketCap, exchange, apiKey, runDate.format(format1));
-        final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
+        final ResponseEntity<String> response = getStringResponseEntity(finalUrl);
         jsonContext = JsonPath.parse(response.getBody());
         networkErrorHandling = true;
       } catch (Exception ex) {
