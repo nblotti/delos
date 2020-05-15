@@ -7,6 +7,7 @@ import ch.nblotti.securities.firm.to.FirmEODShareStatsTO;
 import ch.nblotti.securities.firm.to.FirmEODValuationTO;
 import ch.nblotti.securities.index.sp500.service.Sp500IndexService;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -53,9 +54,12 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
 
   @Autowired
   Sp500IndexService sp500IndexService;
-
+  /*
+    @Autowired
+    private FirmService firmService;
+  */
   @Autowired
-  private FirmService firmService;
+  private BeanFactory beanFactory;
 
   @Autowired
   private ModelMapper modelMapper;
@@ -209,6 +213,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
   public void loadMarket(final String exchange, StateContext<LOADER_STATES, LOADER_EVENTS> context) {
 
 
+    FirmService firmService = beanFactory.getBean(FirmService.class);
     LocalDate runDate = (LocalDate) context.getExtendedState().getVariables().get("runDate");
     Collection<FirmEODQuoteTO> firmSaved = (List<FirmEODQuoteTO>) context.getExtendedState().getVariables().get("quotes");
     if (firmSaved == null) {
@@ -232,7 +237,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
       @Override
       public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> context) {
 
-
+        FirmService firmService = beanFactory.getBean(FirmService.class);
         LocalDate runDate = (LocalDate) context.getExtendedState().getVariables().get("runDate");
         Boolean runPartial = (Boolean) context.getExtendedState().getVariables().get("runPartial");
 
@@ -255,6 +260,8 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
   private void loadDetails(List<FirmEODQuoteTO> firms, LocalDate runDate) {
 
     for (FirmEODQuoteTO firmEODQuoteTO : firms) {
+
+      FirmService firmService = beanFactory.getBean(FirmService.class);
 
       if (!sp500IndexService.hasBeenListed(firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode()))
         continue;

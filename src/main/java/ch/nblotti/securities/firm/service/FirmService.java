@@ -8,6 +8,8 @@ import ch.nblotti.securities.firm.to.FirmEODQuoteTO;
 import ch.nblotti.securities.firm.to.FirmEODShareStatsTO;
 import ch.nblotti.securities.firm.to.FirmEODValuationTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -17,6 +19,7 @@ import java.util.logging.Logger;
 
 
 @Service
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class FirmService {
 
   private static final Logger logger = Logger.getLogger("FirmService");
