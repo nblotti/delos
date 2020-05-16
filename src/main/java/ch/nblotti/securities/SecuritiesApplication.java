@@ -2,6 +2,7 @@ package ch.nblotti.securities;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -25,6 +26,9 @@ import java.util.concurrent.TimeUnit;
 public class SecuritiesApplication {
 
   public static final String CACHE_NAME = "cache";
+
+  @Value("${global.date-format}")
+  public String dateFormat;
 
   public static void main(String[] args) {
     SpringApplication.run(SecuritiesApplication.class, args);
@@ -54,7 +58,7 @@ public class SecuritiesApplication {
 
   @Bean
   public DateTimeFormatter format1() {
-    return DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    return DateTimeFormatter.ofPattern(dateFormat);
   }
 
   @Bean
