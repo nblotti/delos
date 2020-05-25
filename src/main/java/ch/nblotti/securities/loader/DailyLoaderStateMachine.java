@@ -263,9 +263,6 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
 
       FirmService firmService = beanFactory.getBean(FirmService.class);
 
-      if (!sp500IndexService.hasBeenListed(firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode()))
-        continue;
-
       FirmEODValuationTO fVpost = firmService.getValuationByDateAndFirm(runDate, firmEODQuoteTO);
       firmService.save(fVpost);
 
