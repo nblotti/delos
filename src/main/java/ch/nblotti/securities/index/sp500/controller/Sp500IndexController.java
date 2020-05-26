@@ -122,7 +122,7 @@ public class Sp500IndexController {
       executor.submit(loaderThread);
       executor.shutdown();
       try {
-        if (!executor.awaitTermination(1, TimeUnit.HOURS)) {
+        if (!executor.awaitTermination(3, TimeUnit.HOURS)) {
           executor.shutdownNow();
           logger.severe("Ending daily eod security loading- seems blocked");
 
