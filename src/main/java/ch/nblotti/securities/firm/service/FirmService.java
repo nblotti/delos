@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 
@@ -44,18 +45,18 @@ public class FirmService {
   private FirmValuationRepository firmValuationRepository;
 
 
-  public FirmEODValuationTO getValuationByDateAndFirm(LocalDate runDate, FirmEODQuoteTO firmEODQuoteTO) {
+  public Optional<FirmEODValuationTO> getValuationByDateAndFirm(LocalDate runDate, FirmEODQuoteTO firmEODQuoteTO) {
 
     return firmEODRepository.getValuationByDateAndFirm(runDate,firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode());
 
   }
 
-  public FirmEODHighlightsTO getHighlightsByDateAndFirm(LocalDate runDate, FirmEODQuoteTO firmEODQuoteTO) {
+  public Optional<FirmEODHighlightsTO> getHighlightsByDateAndFirm(LocalDate runDate, FirmEODQuoteTO firmEODQuoteTO) {
 
     return firmEODRepository.getHighlightsByDateAndFirm(runDate,firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode());
   }
 
-  public FirmEODShareStatsTO getSharesStatByDateAndFirm(LocalDate runDate, FirmEODQuoteTO firmEODQuoteTO) {
+  public Optional<FirmEODShareStatsTO> getSharesStatByDateAndFirm(LocalDate runDate, FirmEODQuoteTO firmEODQuoteTO) {
     return firmEODRepository.getSharesStatByDateAndExchangeAndFirm(runDate,firmEODQuoteTO.getExchangeShortName(), firmEODQuoteTO.getCode());
   }
 

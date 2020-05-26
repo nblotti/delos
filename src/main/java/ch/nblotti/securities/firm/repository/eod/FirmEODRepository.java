@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -36,6 +37,11 @@ public class FirmEODRepository {
   public static final String EXCHANGE_JSON = "exchangelJson";
   public static final String FIRMS_FINANCIALS = "firms";
   public static final String FIRMS_FINANCIALS_JSON = "firmsFinancialJson";
+
+
+  @Autowired
+  private RestTemplate restTemplate;
+
 
   @Autowired
   Cache cacheOne;
@@ -63,101 +69,91 @@ public class FirmEODRepository {
   private ModelMapper modelMapper;
 
 
-  public FirmEODValuationTO getValuationByDateAndFirm(LocalDate runDate, String exchange, String symbol) {
+  public Optional<FirmEODValuationTO> getValuationByDateAndFirm(LocalDate runDate, String exchange, String symbol) {
 
 
     logger.log(Level.INFO, String.format("%s - Loading valuation details for %s %s ", runDate.format(format1), exchange, symbol));
 
-    boolean networkErrorHandling = false;
-    while (!networkErrorHandling) {
-      try {
-        String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
-        final ResponseEntity<String> response = getStringResponseEntity(finalUrl);
-        DocumentContext content = JsonPath.parse(response.getBody());
-        ValuationDTO valuationDTO = content.read(valuationStr, ValuationDTO.class);
 
-        FirmEODValuationTO fVpost = modelMapper.map(valuationDTO, FirmEODValuationTO.class);
-        fVpost.setExchange(exchange);
-        fVpost.setDate(runDate);
-        fVpost.setCode(symbol);
-        return fVpost;
-      } catch (Exception ex) {
-        logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
-      }
+    String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
+    final ResponseEntity<String> response = getStringResponseEntity(finalUrl);
+    try {
+      DocumentContext content = JsonPath.parse(response.getBody());
+      ValuationDTO valuationDTO = content.read(valuationStr, ValuationDTO.class);
+
+      FirmEODValuationTO fVpost = modelMapper.map(valuationDTO, FirmEODValuationTO.class);
+      fVpost.setExchange(exchange);
+      fVpost.setDate(runDate);
+      fVpost.setCode(symbol);
+      return Optional.of(fVpost);
+    } catch (Exception ex) {
+      logger.log(Level.INFO, String.format("Error, mapping valuation for symbol %s \r\n%s", symbol, ex.getMessage()));
+      return Optional.empty();
     }
-
-
-    throw new IllegalStateException();
 
   }
 
-  public FirmEODHighlightsTO getHighlightsByDateAndFirm(LocalDate runDate, String exchange, String symbol) {
+  public Optional<FirmEODHighlightsTO> getHighlightsByDateAndFirm(LocalDate runDate, String exchange, String symbol) {
 
     logger.log(Level.INFO, String.format("%s - Loading highlights details for %s %s ", runDate.format(format1), exchange, symbol));
 
-
     String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
-    boolean networkErrorHandling = false;
-    while (!networkErrorHandling) {
-      try {
-        final ResponseEntity<String> response = getStringResponseEntity(finalUrl);
-        DocumentContext jsonContext = JsonPath.parse(response.getBody());
-        FirmHighlightsDTO firmHighlightsDTO = jsonContext.read(highlightStr, FirmHighlightsDTO.class);
-        FirmEODHighlightsTO fHpost = modelMapper.map(firmHighlightsDTO, FirmEODHighlightsTO.class);
-        fHpost.setExchange(exchange);
-        fHpost.setDate(runDate);
-        fHpost.setCode(symbol);
-
-        return fHpost;
-      } catch (Exception ex) {
-        logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
-      }
+    final ResponseEntity<String> response = getStringResponseEntity(finalUrl);
+    try {
+      DocumentContext jsonContext = JsonPath.parse(response.getBody());
+      FirmHighlightsDTO firmHighlightsDTO = jsonContext.read(highlightStr, FirmHighlightsDTO.class);
+      FirmEODHighlightsTO fHpost = modelMapper.map(firmHighlightsDTO, FirmEODHighlightsTO.class);
+      fHpost.setExchange(exchange);
+      fHpost.setDate(runDate);
+      fHpost.setCode(symbol);
+      return Optional.of(fHpost);
+    } catch (Exception ex) {
+      logger.log(Level.INFO, String.format("Error, mapping highlight for symbol %s \r\n%s", symbol, ex.getMessage()));
+      return Optional.empty();
     }
-    throw new IllegalStateException();
-
   }
 
   private ResponseEntity<String> getStringResponseEntity(String finalUrl) {
     if (cacheOne.get(finalUrl.hashCode()) == null) {
-      ResponseEntity<String> entity = restTemplate.getForEntity(finalUrl, String.class);
-      cacheOne.put(finalUrl.hashCode(), entity);
-      return entity;
+      boolean networkErrorHandling = false;
+      while (!networkErrorHandling) {
+        try {
+          ResponseEntity<String> entity = restTemplate.getForEntity(finalUrl, String.class);
+          cacheOne.put(finalUrl.hashCode(), entity);
+          return entity;
+        } catch (Exception ex) {
+          logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
+        }
+      }
+      throw new IllegalStateException();
     }
 
     return (ResponseEntity<String>) cacheOne.get(finalUrl.hashCode()).get();
   }
 
-  public FirmEODShareStatsTO getSharesStatByDateAndExchangeAndFirm(LocalDate runDate, String exchange, String symbol) {
+  public Optional<FirmEODShareStatsTO> getSharesStatByDateAndExchangeAndFirm(LocalDate runDate, String exchange, String symbol) {
 
     logger.log(Level.INFO, String.format("%s - Loading ShareStats details for %s %s ", runDate.format(format1), exchange, symbol));
 
 
-    boolean networkErrorHandling = false;
-    while (!networkErrorHandling) {
-      try {
-        String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
-        final ResponseEntity<String> response = getStringResponseEntity(finalUrl);
-        DocumentContext jsonContext = JsonPath.parse(response.getBody());
+    String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
+    final ResponseEntity<String> response = getStringResponseEntity(finalUrl);
+    try {
+      DocumentContext jsonContext = JsonPath.parse(response.getBody());
 
-        SharesStatsDTO sharesStatsDTO = jsonContext.read(sharesStatStr, SharesStatsDTO.class);
+      SharesStatsDTO sharesStatsDTO = jsonContext.read(sharesStatStr, SharesStatsDTO.class);
 
-        FirmEODShareStatsTO fSpost = modelMapper.map(sharesStatsDTO, FirmEODShareStatsTO.class);
-        fSpost.setExchange(exchange);
-        fSpost.setDate(runDate);
-        fSpost.setCode(symbol);
+      FirmEODShareStatsTO fSpost = modelMapper.map(sharesStatsDTO, FirmEODShareStatsTO.class);
+      fSpost.setExchange(exchange);
+      fSpost.setDate(runDate);
+      fSpost.setCode(symbol);
 
-        return fSpost;
-      } catch (Exception ex) {
-        logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
-      }
+      return Optional.of(fSpost);
+    } catch (Exception ex) {
+      logger.log(Level.INFO, String.format("Error, mapping Share stats for symbol %s \r\n%s", symbol, ex.getMessage()));
+      return Optional.empty();
     }
-    throw new IllegalStateException();
-
   }
-
-
-  @Autowired
-  private RestTemplate restTemplate;
 
 
   public List<FirmEODQuoteTO> getExchangeDataByDate(LocalDate runDate, String exchange) {

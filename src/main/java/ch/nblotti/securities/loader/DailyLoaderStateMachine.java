@@ -31,6 +31,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 @Configuration
@@ -263,14 +264,17 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
 
       FirmService firmService = beanFactory.getBean(FirmService.class);
 
-      FirmEODValuationTO fVpost = firmService.getValuationByDateAndFirm(runDate, firmEODQuoteTO);
-      firmService.save(fVpost);
+      Optional<FirmEODValuationTO> fVpost = firmService.getValuationByDateAndFirm(runDate, firmEODQuoteTO);
+      if (fVpost.isPresent())
+        firmService.save(fVpost.get());
 
-      FirmEODHighlightsTO fHpost = firmService.getHighlightsByDateAndFirm(runDate, firmEODQuoteTO);
-      firmService.save(fHpost);
+      Optional<FirmEODHighlightsTO> fHpost = firmService.getHighlightsByDateAndFirm(runDate, firmEODQuoteTO);
+      if (fVpost.isPresent())
+        firmService.save(fHpost.get());
 
-      FirmEODShareStatsTO fSpost = firmService.getSharesStatByDateAndFirm(runDate, firmEODQuoteTO);
-      firmService.save(fSpost);
+      Optional<FirmEODShareStatsTO> fSpost = firmService.getSharesStatByDateAndFirm(runDate, firmEODQuoteTO);
+      if (fVpost.isPresent())
+        firmService.save(fSpost.get());
     }
   }
 
