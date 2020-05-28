@@ -1,18 +1,16 @@
 package ch.nblotti.securities.firm.repository.eod;
 
-import ch.nblotti.securities.firm.to.FirmEODHighlightsTO;
-import ch.nblotti.securities.firm.to.FirmEODQuoteTO;
-import ch.nblotti.securities.firm.to.FirmEODShareStatsTO;
-import ch.nblotti.securities.firm.to.FirmEODValuationTO;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import ch.nblotti.securities.firm.to.*;
+import com.jayway.jsonpath.*;
+import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
+import com.jayway.jsonpath.spi.mapper.MappingProvider;
+import net.minidev.json.writer.JsonReader;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -64,6 +62,7 @@ public class FirmEODRepository {
   public String valuationStr = "$.Valuation";
   public String sharesStatStr = "$.SharesStats";
   public String sharesHistoryStr = "$.[*]";
+  public String infoStr = "$.General";
 
   @Autowired
   private ModelMapper modelMapper;
@@ -90,6 +89,7 @@ public class FirmEODRepository {
       logger.log(Level.INFO, String.format("Error, mapping valuation for symbol %s \r\n%s", symbol, ex.getMessage()));
       return Optional.empty();
     }
+
 
   }
 
@@ -129,6 +129,34 @@ public class FirmEODRepository {
     }
 
     return (ResponseEntity<String>) cacheOne.get(finalUrl.hashCode()).get();
+  }
+
+
+  public Optional<FirmEODInfoTO> getInfosByDateAndExchangeAndFirm(LocalDate runDate, String exchange, String symbol) {
+
+    logger.log(Level.INFO, String.format("%s - Loading firm infos for %s %s ", runDate.format(format1), exchange, symbol));
+
+
+
+
+    String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
+    final ResponseEntity<String> response = getStringResponseEntity(finalUrl);
+    try {
+      DocumentContext jsonContext = JsonPath.parse(response.getBody());
+      jsonContext.delete("$.General.Officers");
+
+      FirmInfosDTO firmInfosDTO = jsonContext.read(infoStr, FirmInfosDTO.class);
+
+      FirmEODInfoTO fIpost = modelMapper.map(firmInfosDTO, FirmEODInfoTO.class);
+      fIpost.setExchange(exchange);
+      fIpost.setDate(runDate);
+      fIpost.setCode(symbol);
+
+      return Optional.of(fIpost);
+    } catch (Exception ex) {
+      logger.log(Level.INFO, String.format("Error, mapping info for symbol %s \r\n%s", symbol, ex.getMessage()));
+      return Optional.empty();
+    }
   }
 
   public Optional<FirmEODShareStatsTO> getSharesStatByDateAndExchangeAndFirm(LocalDate runDate, String exchange, String symbol) {
@@ -227,7 +255,6 @@ public class FirmEODRepository {
       @Override
       protected FirmEODValuationTO convert(ValuationDTO valuationDTO) {
         FirmEODValuationTO firmEODValuationTO = new FirmEODValuationTO();
-        firmEODValuationTO.setDate(LocalDate.now());
         firmEODValuationTO.setForwardPE(valuationDTO.getForwardPE());
         firmEODValuationTO.setTrailingPE(valuationDTO.getTrailingPE());
         firmEODValuationTO.setPriceSalesTTM(valuationDTO.getPriceSalesTTM());
@@ -250,6 +277,15 @@ public class FirmEODRepository {
       @Override
       protected FirmEODShareStatsTO convert(SharesStatsDTO sharesStatsDTO) {
         FirmEODShareStatsTO firmEODShareStatsTO = new FirmEODShareStatsTO();
+        firmEODShareStatsTO.setSharesOutstanding(sharesStatsDTO.getSharesOutstanding());
+        firmEODShareStatsTO.setSharesFloat(sharesStatsDTO.getSharesFloat());
+        firmEODShareStatsTO.setPercentInsiders(sharesStatsDTO.getPercentInsiders());
+        firmEODShareStatsTO.setPercentInstitutions(sharesStatsDTO.getPercentInstitutions());
+        firmEODShareStatsTO.setSharesShort(sharesStatsDTO.getSharesShort());
+        firmEODShareStatsTO.setSharesShortPriorMonth(sharesStatsDTO.getSharesShortPriorMonth());
+        firmEODShareStatsTO.setShortRatio(sharesStatsDTO.getShortRatio());
+        firmEODShareStatsTO.setShortPercentOutstanding(sharesStatsDTO.getShortPercentOutstanding());
+        firmEODShareStatsTO.setShortPercentFloat(sharesStatsDTO.getShortPercentFloat());
         return firmEODShareStatsTO;
       }
     };
@@ -274,6 +310,53 @@ public class FirmEODRepository {
         firmTO.setVolume(firmDTO.getVolume());
         firmTO.setAdjustedClose(firmDTO.getAdjusted_close());
         return firmTO;
+      }
+    };
+
+    modelMapper.addConverter(toUppercase);
+
+  }
+
+  @PostConstruct
+  public void initFirmInfoMapper() {
+
+    Converter<FirmInfosDTO, FirmEODInfoTO> toUppercase = new AbstractConverter<FirmInfosDTO, FirmEODInfoTO>() {
+
+      @Override
+      protected FirmEODInfoTO convert(FirmInfosDTO firmInfosDTO) {
+        FirmEODInfoTO firmEODInfoTO = new FirmEODInfoTO();
+        firmEODInfoTO.setCode(firmInfosDTO.getCode());
+        firmEODInfoTO.setName(firmInfosDTO.getName());
+        firmEODInfoTO.setType(firmInfosDTO.getType());
+        firmEODInfoTO.setExchange(firmInfosDTO.getExchange());
+        firmEODInfoTO.setCurrencyName(firmInfosDTO.getCurrencyName());
+        firmEODInfoTO.setCurrencySymbol(firmInfosDTO.getCurrencySymbol());
+        firmEODInfoTO.setCountryISO(firmInfosDTO.getCountryISO());
+        firmEODInfoTO.setIsin(firmInfosDTO.getISIN());
+        firmEODInfoTO.setcCusip(firmInfosDTO.getCUSIP());
+        firmEODInfoTO.setcCik(firmInfosDTO.getCIK());
+        firmEODInfoTO.setEmployerIdNumber(firmInfosDTO.getEmployerIdNumber());
+        firmEODInfoTO.setFiscalYearEnd(firmInfosDTO.getFiscalYearEnd());
+        firmEODInfoTO.setiPODate(firmInfosDTO.getIPODate());
+        firmEODInfoTO.setInternationalDomestic(firmInfosDTO.getInternationalDomestic());
+        firmEODInfoTO.setSector(firmInfosDTO.getSector());
+
+        firmEODInfoTO.setIndustry(firmInfosDTO.getIndustry());
+        firmEODInfoTO.setGicSector(firmInfosDTO.getGicSector());
+        firmEODInfoTO.setGicGroup(firmInfosDTO.getGicGroup());
+        firmEODInfoTO.setGicIndustry(firmInfosDTO.getGicIndustry());
+        firmEODInfoTO.setGicSubIndustry(firmInfosDTO.getGicSubIndustry());
+        firmEODInfoTO.setDescription(firmInfosDTO.getDescription());
+        firmEODInfoTO.setAddress(firmInfosDTO.getAddress());
+
+        firmEODInfoTO.setPhone(firmInfosDTO.getPhone());
+        firmEODInfoTO.setWebURL(firmInfosDTO.getWebURL());
+        firmEODInfoTO.setLogoURL(firmInfosDTO.getLogoURL());
+        firmEODInfoTO.setFullTimeEmployees(firmInfosDTO.getFullTimeEmployees());
+        firmEODInfoTO.setUpdatedAt(firmInfosDTO.getUpdatedAt());
+
+
+        return firmEODInfoTO;
       }
     };
 

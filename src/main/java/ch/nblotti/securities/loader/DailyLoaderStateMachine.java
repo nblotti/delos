@@ -1,10 +1,7 @@
 package ch.nblotti.securities.loader;
 
 import ch.nblotti.securities.firm.service.FirmService;
-import ch.nblotti.securities.firm.to.FirmEODHighlightsTO;
-import ch.nblotti.securities.firm.to.FirmEODQuoteTO;
-import ch.nblotti.securities.firm.to.FirmEODShareStatsTO;
-import ch.nblotti.securities.firm.to.FirmEODValuationTO;
+import ch.nblotti.securities.firm.to.*;
 import ch.nblotti.securities.index.sp500.service.Sp500IndexService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.BeanFactory;
@@ -263,6 +260,11 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
     for (FirmEODQuoteTO firmEODQuoteTO : firms) {
 
       FirmService firmService = beanFactory.getBean(FirmService.class);
+
+      Optional<FirmEODInfoTO> fIpost = firmService.getInfosByDateAndExchangeAndFirm(runDate, firmEODQuoteTO);
+      if (fIpost.isPresent())
+        firmService.save(fIpost.get());
+
 
       Optional<FirmEODValuationTO> fVpost = firmService.getValuationByDateAndFirm(runDate, firmEODQuoteTO);
       if (fVpost.isPresent())

@@ -1,0 +1,37 @@
+drop table IF EXISTS firm_eod_info CASCADE;
+CREATE TABLE firm_eod_info
+(
+    ID                     SERIAL PRIMARY KEY,
+    DATE                   date        NOT NULL,
+    CODE                   varchar(50) NOT NULL,
+    TYPE                   varchar(50),
+    NAME                   varchar(50),
+    EXCHANGE               varchar(50) NOT NULL,
+    CURRENCY_CODE          varchar(50),
+    CURRENCY_NAME          varchar(50),
+    CURRENCY_SYMBOL        varchar(50),
+    COUNTRY_NAME           varchar(50),
+    COUNTRY_ISO            varchar(50),
+    ISIN                   varchar(50),
+    CUSIP                  varchar(50),
+    CIK                    varchar(50),
+    EMPLOYER_ID_NUMBER     varchar(50),
+    FISCAL_YEAR_END        varchar(50),
+    IPO_DATE               varchar(50),
+    INTERNATIONAL_DOMESTIC varchar(50),
+    SECTOR                 varchar(50),
+    INDUSTRY               varchar(50),
+    GIC_SECTOR             varchar(50),
+    GIC_GROUP              varchar(50),
+    GIC_INDUSTRY           varchar(75),
+    GIC_SUB_INDUSTRY       varchar(75),
+    DESCRIPTION            TEXT,
+    ADDRESS                varchar(100),
+    PHONE                  varchar(50),
+    WEB_URL                varchar(50),
+    LOGO_URL               varchar(50),
+    FULL_TIME_EMPLOYEES    int,
+    UPDATED_AT             varchar(50),
+
+    unique (DATE, CODE, EXCHANGE)
+);
