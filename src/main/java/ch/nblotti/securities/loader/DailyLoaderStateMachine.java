@@ -115,7 +115,10 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
       .source(LOADER_STATES.LOAD_NASDAQ).target(LOADER_STATES.SAVE_FIRM)
       .and()
       .withLocal()
-      .source(LOADER_STATES.SAVE_FIRM).target(LOADER_STATES.DONE);
+      .source(LOADER_STATES.SAVE_FIRM).target(LOADER_STATES.REFRESH_MAT_VIEWS)
+      .and()
+      .withLocal()
+      .source(LOADER_STATES.REFRESH_MAT_VIEWS).target(LOADER_STATES.DONE);
   }
 
 
