@@ -26,7 +26,7 @@ public class TopMoversVolumeTO implements Serializable {
   private String exchange;
 
   @Column(name = "volume")
-  private double volume;
+  private Double volume;
 
   @Column(name = "updated_at")
   private LocalDate updatedDate;
@@ -55,11 +55,11 @@ public class TopMoversVolumeTO implements Serializable {
     this.exchange = exchange;
   }
 
-  public double getVolume() {
+  public Double getVolume() {
     return volume;
   }
 
-  public void setVolume(double volume) {
+  public void setVolume(Double volume) {
     this.volume = volume;
   }
 

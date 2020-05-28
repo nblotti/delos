@@ -22,14 +22,14 @@ public class TopMoversGainersLoosersTO implements Serializable {
   private String exchange;
 
   @Column(name = "adjusted_close")
-  private double adjustedClose;
+  private Double adjustedClose;
 
 
   @Column(name = "previous_adjusted_close")
-  private double previousadjustedClose;
+  private Double previousadjustedClose;
 
   @Column(name = "last_move")
-  private double percentChange;
+  private Double percentChange;
 
   public LocalDate getDate() {
     return date;
@@ -55,7 +55,7 @@ public class TopMoversGainersLoosersTO implements Serializable {
     this.exchange = exchange;
   }
 
-  public double getAdjustedClose() {
+  public Double getAdjustedClose() {
     return adjustedClose;
   }
 
@@ -63,19 +63,19 @@ public class TopMoversGainersLoosersTO implements Serializable {
     this.adjustedClose = adjustedClose;
   }
 
-  public double getPreviousadjustedClose() {
+  public Double getPreviousadjustedClose() {
     return previousadjustedClose;
   }
 
-  public void setPreviousadjustedClose(double previousadjustedClose) {
+  public void setPreviousadjustedClose(Double previousadjustedClose) {
     this.previousadjustedClose = previousadjustedClose;
   }
 
-  public double getPercentChange() {
+  public Double getPercentChange() {
     return percentChange;
   }
 
-  public void setPercentChange(double percentChange) {
+  public void setPercentChange(Double percentChange) {
     this.percentChange = percentChange;
   }
 }
