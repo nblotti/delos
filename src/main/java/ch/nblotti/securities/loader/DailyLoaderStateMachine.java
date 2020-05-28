@@ -1,5 +1,6 @@
 package ch.nblotti.securities.loader;
 
+import ch.nblotti.securities.JpaDao;
 import ch.nblotti.securities.firm.service.FirmService;
 import ch.nblotti.securities.firm.to.*;
 import ch.nblotti.securities.index.sp500.service.Sp500IndexService;
@@ -62,6 +63,8 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
   @Autowired
   private ModelMapper modelMapper;
 
+  @Autowired
+  JpaDao jpaDao;
 
   @PostConstruct
   public void initFFirmHistorical() {
@@ -87,6 +90,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
       .state(LOADER_STATES.LOAD_NYSE, loadNYSE())
       .state(LOADER_STATES.LOAD_NASDAQ, loadNASDAQ())
       .state(LOADER_STATES.SAVE_FIRM, saveFirms())
+      .state(LOADER_STATES.REFRESH_MAT_VIEWS, refreshMaterializedViews())
       .end(LOADER_STATES.DONE);
 
 
@@ -246,6 +250,17 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
           loadDetails(firms, runDate);
 
         finalAction(runDate);
+      }
+    };
+  }
+
+
+  @Bean
+  public Action<LOADER_STATES, LOADER_EVENTS> refreshMaterializedViews() {
+    return new Action<LOADER_STATES, LOADER_EVENTS>() {
+      @Override
+      public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> context) {
+        jpaDao.requireRefresh();
       }
     };
   }

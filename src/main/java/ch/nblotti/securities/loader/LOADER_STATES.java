@@ -6,6 +6,7 @@ public enum LOADER_STATES {
   LOAD_NYSE,
   LOAD_NASDAQ,
   SAVE_FIRM,
+  REFRESH_MAT_VIEWS,
   ERROR,
   DONE;
 }
