@@ -15,7 +15,6 @@ select * from (
 where t.rank = 2;
 
 drop FUNCTION IF EXISTS refresh_fn CASCADE;
-drop PROCEDURE IF EXISTS refresh_fn CASCADE;
 
 CREATE FUNCTION refresh_fn() RETURNS integer
 LANGUAGE PLPGSQL
