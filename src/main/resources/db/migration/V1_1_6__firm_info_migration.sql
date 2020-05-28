@@ -5,7 +5,7 @@ CREATE TABLE firm_eod_info
     DATE                   date        NOT NULL,
     CODE                   varchar(50) NOT NULL,
     TYPE                   varchar(50),
-    NAME                   varchar(50),
+    NAME                   TEXT,
     EXCHANGE               varchar(50) NOT NULL,
     CURRENCY_CODE          varchar(50),
     CURRENCY_NAME          varchar(50),
