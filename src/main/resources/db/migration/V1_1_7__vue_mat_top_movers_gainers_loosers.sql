@@ -1,6 +1,19 @@
-DROP MATERIALIZED VIEW  IF EXISTS mv_movers;
-create materialized view mv_movers as
-select *
+DROP
+MATERIALIZED VIEW  IF EXISTS mv_movers;
+create
+materialized view mv_movers as
+select u.date,
+       u.code,
+       u.exchange,
+       u.name,
+       u.type,
+       u.isin,
+       u.cusip,
+       u.updated_at,
+       t.adjusted_close,
+       t.previous_adjusted_close,
+       t.volume,
+       t.last_move
 from (
          select r.*,
                 CASE
@@ -17,12 +30,23 @@ from (
    )
    select date, code, exchange, adjusted_close, LAG (adjusted_close,1) over (order by code) previous_adjusted_close , volume from cte
    ) r
- )t
-where t.rank = 2;
+ )t,
+ (
+select *, RANK() OVER (partition by code order by date desc) rank_number
+from firm_eod_info ) u
+where t.rank = 2
+  and
+    u.rank_number = 1
+  and
+    u.code = t.code
+  and
+    u.exchange = t.exchange;
 /*-------------------------------------------------*/
-DROP MATERIALIZED VIEW  IF EXISTS mv_movers_volume;
-create materialized view mv_movers_volume as
-select t.name, t.code, t.exchange, v.updated_at, t.volume
+DROP
+MATERIALIZED VIEW  IF EXISTS mv_movers_volume;
+create
+materialized view mv_movers_volume as
+select m.date, m.code, m.exchange, m.name, m.type, m.isin, m.cusip, m.updated_at, m.adjusted_close, m.previous_adjusted_close,t.volume,m.last_move
 from (
          select code, exchange, name, sum(volume) as volume
          from (
@@ -36,16 +60,18 @@ from (
            and fs.exchange = fi.exchange)) s
 where rank_number <= 5
 group by code, exchange, name) t,
-(select * from firm_eod_info)v
-where t.code = v.code
-  and
-    t.exchange = v.exchange
+(select * from mv_movers) m
+where t.exchange = m.exchange and
+    t.code = m.code
 order by volume desc;
+
 /*-------------------------------------------------*/
 
-drop FUNCTION IF EXISTS refresh_fn CASCADE;
+drop
+FUNCTION IF EXISTS refresh_fn CASCADE;
 
-CREATE FUNCTION refresh_fn() RETURNS integer
+CREATE
+FUNCTION refresh_fn() RETURNS integer
 LANGUAGE PLPGSQL
 AS $$
 BEGIN
