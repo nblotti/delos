@@ -1,4 +1,6 @@
 DROP
+MATERIALIZED VIEW  IF EXISTS mv_movers_volume;
+DROP
 MATERIALIZED VIEW  IF EXISTS mv_movers;
 create
 materialized view mv_movers as
@@ -42,8 +44,7 @@ where t.rank = 2
   and
     u.exchange = t.exchange;
 /*-------------------------------------------------*/
-DROP
-MATERIALIZED VIEW  IF EXISTS mv_movers_volume;
+
 create
 materialized view mv_movers_volume as
 select m.date, m.code, m.exchange, m.name, m.type, m.isin, m.cusip, m.updated_at, m.adjusted_close, m.previous_adjusted_close,t.volume,m.last_move
