@@ -2,9 +2,10 @@ DROP
 MATERIALIZED VIEW  IF EXISTS mv_movers_volume;
 DROP
 MATERIALIZED VIEW  IF EXISTS mv_movers;
-create
-materialized view mv_movers as
-select u.date,
+create materialized view mv_movers as
+select
+       ROW_NUMBER () OVER (ORDER BY u.code asc) id ,
+       u.date,
        u.code,
        u.exchange,
        u.name,
@@ -45,9 +46,8 @@ where t.rank = 2
     u.exchange = t.exchange;
 /*-------------------------------------------------*/
 
-create
-materialized view mv_movers_volume as
-select m.date, m.code, m.exchange, m.name, m.type, m.isin, m.cusip, m.updated_at, m.adjusted_close, m.previous_adjusted_close,t.volume,m.last_move
+create materialized view mv_movers_volume as
+select m.id m.date, m.code, m.exchange, m.name, m.type, m.isin, m.cusip, m.updated_at, m.adjusted_close, m.previous_adjusted_close,t.volume,m.last_move
 from (
          select code, exchange, name, sum(volume) as volume
          from (
