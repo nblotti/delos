@@ -24,6 +24,8 @@ public class FirmEODInfoTO {
   String name;
   @Column(name = "exchange")
   String exchange;
+  @Column(name = "current_exchange")
+  String currentExchange;
   @Column(name = "currency_code")
   String currencyCode;
   @Column(name = "currency_name")
@@ -318,5 +320,29 @@ public class FirmEODInfoTO {
 
   public void setUpdatedAt(String updatedAt) {
     this.updatedAt = updatedAt;
+  }
+
+  public String getCurrentExchange() {
+    return currentExchange;
+  }
+
+  public void setCurrentExchange(String currentExchange) {
+    this.currentExchange = currentExchange;
+  }
+
+  public String getCusip() {
+    return cusip;
+  }
+
+  public void setCusip(String cusip) {
+    this.cusip = cusip;
+  }
+
+  public String getCik() {
+    return cik;
+  }
+
+  public void setCik(String cik) {
+    this.cik = cik;
   }
 }

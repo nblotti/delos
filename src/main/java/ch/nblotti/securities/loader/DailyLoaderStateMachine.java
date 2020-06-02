@@ -280,8 +280,10 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
       FirmService firmService = beanFactory.getBean(FirmService.class);
 
       Optional<FirmEODInfoTO> fIpost = firmService.getInfosByDateAndExchangeAndFirm(runDate, firmEODQuoteTO);
-      if (fIpost.isPresent())
+      if (fIpost.isPresent()) {
+        fIpost.get().setCurrentExchange(firmEODQuoteTO.getActualExchange());
         firmService.save(fIpost.get());
+      }
 
 
       Optional<FirmEODValuationTO> fVpost = firmService.getValuationByDateAndFirm(runDate, firmEODQuoteTO);

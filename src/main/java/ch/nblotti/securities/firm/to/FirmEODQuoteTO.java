@@ -25,6 +25,9 @@ public class FirmEODQuoteTO {
   @Column(name = "exchange")
   String exchangeShortName;
 
+  @Transient
+  String actualExchange;
+
   @Column(name = "market_cap")
   long marketCapitalization;
 
@@ -93,5 +96,13 @@ public class FirmEODQuoteTO {
 
   public void setVolume(long volume) {
     this.volume = volume;
+  }
+
+  public String getActualExchange() {
+    return actualExchange;
+  }
+
+  public void setActualExchange(String actualExchange) {
+    this.actualExchange = actualExchange;
   }
 }

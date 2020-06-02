@@ -137,8 +137,6 @@ public class FirmEODRepository {
     logger.log(Level.INFO, String.format("%s - Loading firm infos for %s %s ", runDate.format(format1), exchange, symbol));
 
 
-
-
     String finalUrl = String.format(firmUrl, symbol, exchange, apiKey);
     final ResponseEntity<String> response = getStringResponseEntity(finalUrl);
     try {
@@ -201,7 +199,7 @@ public class FirmEODRepository {
     List<FirmDTO> firms = Arrays.asList(jsonContext.read(sharesHistoryStr, FirmDTO[].class));
 
     List<FirmEODQuoteTO> firmsTOs = firms.stream().map(x -> modelMapper.map(x, FirmEODQuoteTO.class)).collect(Collectors.toList());
-
+    firmsTOs.stream().forEach(x -> x.setActualExchange(exchange));
     return firmsTOs;
   }
 
