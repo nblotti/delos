@@ -7,6 +7,7 @@ CREATE TABLE firm_eod_info
     TYPE                   varchar(50),
     NAME                   TEXT,
     EXCHANGE               varchar(50) NOT NULL,
+    CURRENT_EXCHANGE       varchar(50) NOT NULL DEFAULT 'us',
     CURRENCY_CODE          varchar(50),
     CURRENCY_NAME          varchar(50),
     CURRENCY_SYMBOL        varchar(50),

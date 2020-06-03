@@ -8,6 +8,7 @@ select
        u.date,
        u.code,
        u.exchange,
+       u.CURRENT_EXCHANGE,
        u.name,
        u.type,
        u.isin,
