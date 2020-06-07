@@ -1,6 +1,6 @@
   pipeline {
     environment {
-    registry = "nblotti/security"
+    registry = "nblotti/delos"
     registryCredential = 'dockerhub_id'
     dockerImage = ''
 
@@ -23,7 +23,7 @@
     }
     stage('Cloning our Git') {
     steps {
-    git 'git@github.com:nblotti/securities.git'
+    git 'git@github.com:nblotti/delos.git'
 
   }
 
@@ -74,7 +74,7 @@
   }
     stage('Kube deploy') {
     steps{
-    sh "kubectl set image deployment/nblotti-security nblotti=nblotti/security:v${version} --record"
+    sh "kubectl set image deployment/nblotti-delos nblotti=nblotti/delos:v${version} --record"
 
   }
 

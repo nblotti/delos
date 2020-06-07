@@ -3,7 +3,7 @@ package ch.nblotti.securities.loader;
 import ch.nblotti.securities.JpaDao;
 import ch.nblotti.securities.firm.service.FirmService;
 import ch.nblotti.securities.firm.to.*;
-import ch.nblotti.securities.index.sp500.service.Sp500IndexService;
+import ch.nblotti.securities.index.service.IndexCompositionService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,15 +48,15 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
 
   public static final String EVENT_MESSAGE_DAY = "firms";
 
+  @Value("${index.list}")
+  private String indexList;
+
+
   @Value("${nyse.closed.days}")
   public String nyseClosedDays;
 
   @Autowired
-  Sp500IndexService sp500IndexService;
-  /*
-    @Autowired
-    private FirmService firmService;
-  */
+  IndexCompositionService indexCompositionService;
   @Autowired
   private BeanFactory beanFactory;
 
@@ -162,7 +162,9 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
           context.getExtendedState().getVariables().put("runPartial", runPartial);
 
         if (runDate.getDayOfMonth() == 1) {
-          sp500IndexService.loadSPCompositionAtDate(runDate);
+          String indexes[] = indexList.split(",");
+          for (String index : indexes)
+            indexCompositionService.loadSPCompositionAtDate(runDate, index);
         }
 
 

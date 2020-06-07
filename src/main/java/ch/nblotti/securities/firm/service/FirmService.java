@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -74,20 +73,6 @@ public class FirmService {
     return firmQuoteRepository.saveAll(firmsTOs);
   }
 
-  /*
-    public void saveAllValuations(Collection<FirmEODValuationTO> valuations) {
-      firmValuationRepository.saveAll(valuations);
-    }
-
-    public void saveAllHighlights(Collection<FirmEODHighlightsTO> highlights) {
-      firmHighlightsRepository.saveAll(highlights);
-    }
-
-    public void saveAllSharesStats(Collection<FirmEODShareStatsTO> sharesStats) {
-      firmSharesStatsRepository.saveAll(sharesStats);
-    }
-
-  */
   public <S extends FirmEODHighlightsTO> S save(S entity) {
     return firmHighlightsRepository.save(entity);
   }

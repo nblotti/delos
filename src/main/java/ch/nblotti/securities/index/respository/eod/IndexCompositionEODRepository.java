@@ -1,6 +1,6 @@
-package ch.nblotti.securities.index.sp500.respository.eod;
+package ch.nblotti.securities.index.respository.eod;
 
-import ch.nblotti.securities.index.sp500.to.IndexCompositionTO;
+import ch.nblotti.securities.index.to.IndexCompositionTO;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.modelmapper.AbstractConverter;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class IndexComposition0EODRepository {
+public class IndexCompositionEODRepository {
 
 
 
@@ -56,6 +56,7 @@ public class IndexComposition0EODRepository {
     DocumentContext jsonContext = JsonPath.parse(response.getBody());
 
     List<IndexCompositionDTO> firms = Arrays.asList(jsonContext.read(conponentStr, IndexCompositionDTO[].class));
+    firms.stream().forEach(x -> x.setExchange(index));
     List<IndexCompositionTO> firmsTOs = firms.stream().map(x -> modelMapper.map(x, IndexCompositionTO.class)).collect(Collectors.toList());
     firmsTOs.stream().forEach(x -> x.setDate(localDate));
 
@@ -73,7 +74,7 @@ public class IndexComposition0EODRepository {
         IndexCompositionTO indexCompositionTO = new IndexCompositionTO();
 
         indexCompositionTO.setCodeFirm(firmDTO.getCode());
-        indexCompositionTO.setIndustry(firmDTO.getSector());
+        indexCompositionTO.setIndustry(firmDTO.getIndustry());
         indexCompositionTO.setSector(firmDTO.getSector());
         indexCompositionTO.setExchange(firmDTO.getExchange());
         return indexCompositionTO;

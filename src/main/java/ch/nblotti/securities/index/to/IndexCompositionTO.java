@@ -1,11 +1,11 @@
-package ch.nblotti.securities.index.sp500.to;
+package ch.nblotti.securities.index.to;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "SP500_COMPOSITION")
-public class Sp500IndexSectorIndustryTO {
+@Table(name = "INDEX_COMPOSITION")
+public class IndexCompositionTO {
 
   @Id
   @SequenceGenerator(initialValue = 2000000, name = "sp500_composition_id_gen", sequenceName = "sp500_composition_id_seq", allocationSize = 1)
@@ -27,7 +27,7 @@ public class Sp500IndexSectorIndustryTO {
   @Column(name = "industry")
   private String industry;
 
-  public Sp500IndexSectorIndustryTO() {
+  public IndexCompositionTO() {
   }
 
   public String getCodeFirm() {

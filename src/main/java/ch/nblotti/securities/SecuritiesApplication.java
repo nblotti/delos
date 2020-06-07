@@ -11,12 +11,16 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.format.Formatter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.ParseException;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
@@ -66,6 +70,22 @@ public class SecuritiesApplication {
     return new CaffeineCache(CACHE_NAME, Caffeine.newBuilder()
       .expireAfterWrite(30, TimeUnit.SECONDS)
       .build());
+  }
+
+  @Bean
+  public Formatter<LocalDate> localDateFormatter() {
+
+    return new Formatter<LocalDate>() {
+      @Override
+      public LocalDate parse(String text, Locale locale) throws ParseException {
+        return LocalDate.parse(text, format1());
+      }
+
+      @Override
+      public String print(LocalDate object, Locale locale) {
+        return format1().format(object);
+      }
+    };
   }
 
 

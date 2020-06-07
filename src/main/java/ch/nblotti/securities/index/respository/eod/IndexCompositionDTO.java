@@ -1,6 +1,6 @@
-package ch.nblotti.securities.index.sp500.respository.eod;
+package ch.nblotti.securities.index.respository.eod;
 
-class FirmDTO {
+class IndexCompositionDTO {
 
 
   String Code;
@@ -13,7 +13,7 @@ class FirmDTO {
 
   String Industry;
 
-  public FirmDTO() {
+  public IndexCompositionDTO() {
   }
 
   public String getCode() {

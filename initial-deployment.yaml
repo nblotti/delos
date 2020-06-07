@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nblotti-security
+  name: nblotti-delos
   labels:
-    app: nblotti_security
+    app: nblotti_delos
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nblotti_security
+      app: nblotti_delos
   template:
     metadata:
       labels:
-        app: nblotti_security
+        app: nblotti_delos
     spec:
       containers:
         - name: nblotti
-          image: nblotti/security:v0.0.8
+          image: nblotti/delos:v0.0.79
           ports:
             - containerPort: 8080
       imagePullSecrets:
