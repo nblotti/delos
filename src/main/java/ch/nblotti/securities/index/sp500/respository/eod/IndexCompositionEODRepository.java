@@ -1,6 +1,6 @@
 package ch.nblotti.securities.index.sp500.respository.eod;
 
-import ch.nblotti.securities.index.sp500.to.Sp500IndexSectorIndustryTO;
+import ch.nblotti.securities.index.sp500.to.IndexCompositionTO;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.modelmapper.AbstractConverter;
@@ -21,18 +21,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class IndexSp500EODRepository {
+public class IndexComposition0EODRepository {
 
 
 
   @Autowired
   private DateTimeFormatter format1;
 
-  @Value("${index.sp500.component.api.url}")
-  public String sp500ComponentUrl;
+  @Value("${index.component.api.url}")
+  public String indexComponentUrl;
 
 
-  private final String EOD_INDEX_SP500 = "GSPC.INDX";
 
   public String conponentStr = "$.Components[*]";
 
@@ -47,17 +46,17 @@ public class IndexSp500EODRepository {
   private RestTemplate restTemplate;
 
 
-  public Collection<Sp500IndexSectorIndustryTO> getSPCompositionAtDate(LocalDate localDate) {
+  public Collection<IndexCompositionTO> getIndexCompositionAtDate(LocalDate localDate, String index) {
 
 
-    String finalUrl = String.format(sp500ComponentUrl, EOD_INDEX_SP500, apiKey, localDate.format(format1), localDate.format(format1));
+    String finalUrl = String.format(indexComponentUrl, index, apiKey, localDate.format(format1), localDate.format(format1));
 
     final ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
 
     DocumentContext jsonContext = JsonPath.parse(response.getBody());
 
-    List<FirmDTO> firms = Arrays.asList(jsonContext.read(conponentStr, FirmDTO[].class));
-    List<Sp500IndexSectorIndustryTO> firmsTOs = firms.stream().map(x -> modelMapper.map(x, Sp500IndexSectorIndustryTO.class)).collect(Collectors.toList());
+    List<IndexCompositionDTO> firms = Arrays.asList(jsonContext.read(conponentStr, IndexCompositionDTO[].class));
+    List<IndexCompositionTO> firmsTOs = firms.stream().map(x -> modelMapper.map(x, IndexCompositionTO.class)).collect(Collectors.toList());
     firmsTOs.stream().forEach(x -> x.setDate(localDate));
 
     return firmsTOs;
@@ -67,17 +66,17 @@ public class IndexSp500EODRepository {
   @PostConstruct
   public void initShareStatsMapper() {
 
-    Converter<FirmDTO, Sp500IndexSectorIndustryTO> toUppercase = new AbstractConverter<FirmDTO, Sp500IndexSectorIndustryTO>() {
+    Converter<IndexCompositionDTO, IndexCompositionTO> toUppercase = new AbstractConverter<IndexCompositionDTO, IndexCompositionTO>() {
 
       @Override
-      protected Sp500IndexSectorIndustryTO convert(FirmDTO firmDTO) {
-        Sp500IndexSectorIndustryTO sp500IndexSectorIndustryTO = new Sp500IndexSectorIndustryTO();
+      protected IndexCompositionTO convert(IndexCompositionDTO firmDTO) {
+        IndexCompositionTO indexCompositionTO = new IndexCompositionTO();
 
-        sp500IndexSectorIndustryTO.setCodeFirm(firmDTO.getCode());
-        sp500IndexSectorIndustryTO.setIndustry(firmDTO.getSector());
-        sp500IndexSectorIndustryTO.setSector(firmDTO.getSector());
-        sp500IndexSectorIndustryTO.setExchange(firmDTO.getExchange());
-        return sp500IndexSectorIndustryTO;
+        indexCompositionTO.setCodeFirm(firmDTO.getCode());
+        indexCompositionTO.setIndustry(firmDTO.getSector());
+        indexCompositionTO.setSector(firmDTO.getSector());
+        indexCompositionTO.setExchange(firmDTO.getExchange());
+        return indexCompositionTO;
       }
     };
 
