@@ -9,7 +9,7 @@
   </parent>
   <groupId>ch.nblotti</groupId>
   <artifactId>delos</artifactId>
-  <version>0.0.84-SNAPSHOT</version>
+  <version>0.0.85-SNAPSHOT</version>
   <name>delos</name>
   <description>Security Manager</description>
 
