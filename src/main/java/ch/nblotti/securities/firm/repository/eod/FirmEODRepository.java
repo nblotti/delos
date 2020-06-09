@@ -1,32 +1,24 @@
 package ch.nblotti.securities.firm.repository.eod;
 
+import ch.nblotti.securities.firm.repository.common.eod.AbstractEODQuoteRepository;
 import ch.nblotti.securities.firm.to.*;
-import com.jayway.jsonpath.*;
-import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
-import com.jayway.jsonpath.spi.mapper.MappingProvider;
-import net.minidev.json.writer.JsonReader;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.Converter;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.Cache;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Component
-public class FirmEODRepository {
+public class FirmEODRepository extends AbstractEODQuoteRepository {
 
 
   private static final Logger logger = Logger.getLogger("FirmEODRepository");
@@ -37,35 +29,18 @@ public class FirmEODRepository {
   public static final String FIRMS_FINANCIALS_JSON = "firmsFinancialJson";
 
 
-  @Autowired
-  private RestTemplate restTemplate;
-
-
-  @Autowired
-  Cache cacheOne;
-
-  @Autowired
-  private DateTimeFormatter format1;
-
-
   @Value("${firm.marketCap.bulk.url}")
   private String marketCap;
-
 
   @Value("${index.firm.api.url}")
   public String firmUrl;
 
-  @Value("${spring.application.eod.api.key}")
-  public String apiKey;
 
   public String highlightStr = "$.Highlights";
   public String valuationStr = "$.Valuation";
   public String sharesStatStr = "$.SharesStats";
   public String sharesHistoryStr = "$.[*]";
   public String infoStr = "$.General";
-
-  @Autowired
-  private ModelMapper modelMapper;
 
 
   public Optional<FirmEODValuationTO> getValuationByDateAndFirm(LocalDate runDate, String exchange, String symbol) {
@@ -111,24 +86,6 @@ public class FirmEODRepository {
       logger.log(Level.INFO, String.format("Error, mapping highlight for symbol %s \r\n%s", symbol, ex.getMessage()));
       return Optional.empty();
     }
-  }
-
-  private ResponseEntity<String> getStringResponseEntity(String finalUrl) {
-    if (cacheOne.get(finalUrl.hashCode()) == null) {
-      boolean networkErrorHandling = false;
-      while (!networkErrorHandling) {
-        try {
-          ResponseEntity<String> entity = restTemplate.getForEntity(finalUrl, String.class);
-          cacheOne.put(finalUrl.hashCode(), entity);
-          return entity;
-        } catch (Exception ex) {
-          logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
-        }
-      }
-      throw new IllegalStateException();
-    }
-
-    return (ResponseEntity<String>) cacheOne.get(finalUrl.hashCode()).get();
   }
 
 
@@ -184,21 +141,9 @@ public class FirmEODRepository {
 
   public List<FirmEODQuoteTO> getExchangeDataByDate(LocalDate runDate, String exchange) {
 
-    DocumentContext jsonContext = null;
-    boolean networkErrorHandling = false;
-    while (!networkErrorHandling) {
-      try {
-        String finalUrl = String.format(marketCap, exchange, apiKey, runDate.format(format1));
-        final ResponseEntity<String> response = getStringResponseEntity(finalUrl);
-        jsonContext = JsonPath.parse(response.getBody());
-        networkErrorHandling = true;
-      } catch (Exception ex) {
-        logger.log(Level.INFO, String.format("Error, retrying\r\n%s", ex.getMessage()));
-      }
-    }
-    List<FirmDTO> firms = Arrays.asList(jsonContext.read(sharesHistoryStr, FirmDTO[].class));
+    String finalUrl = String.format(marketCap, exchange, apiKey, runDate.format(format1));
 
-    List<FirmEODQuoteTO> firmsTOs = firms.stream().map(x -> modelMapper.map(x, FirmEODQuoteTO.class)).collect(Collectors.toList());
+    List<FirmEODQuoteTO> firmsTOs = this.getDataByDate(FirmEODQuoteTO.class, finalUrl, sharesHistoryStr);
     firmsTOs.stream().forEach(x -> x.setActualExchange(exchange));
     return firmsTOs;
   }
@@ -292,28 +237,6 @@ public class FirmEODRepository {
 
   }
 
-  @PostConstruct
-  public void initFirmMapper() {
-
-    Converter<FirmDTO, FirmEODQuoteTO> toUppercase = new AbstractConverter<FirmDTO, FirmEODQuoteTO>() {
-
-      @Override
-      protected FirmEODQuoteTO convert(FirmDTO firmDTO) {
-        FirmEODQuoteTO firmTO = new FirmEODQuoteTO();
-        firmTO.setName(firmDTO.getName());
-        firmTO.setCode(firmDTO.getCode());
-        firmTO.setExchangeShortName(firmDTO.getExchange_short_name());
-        firmTO.setDate(LocalDate.parse(firmDTO.getDate(), format1));
-        firmTO.setMarketCapitalization(firmDTO.getMarketCapitalization());
-        firmTO.setVolume(firmDTO.getVolume());
-        firmTO.setAdjustedClose(firmDTO.getAdjusted_close());
-        return firmTO;
-      }
-    };
-
-    modelMapper.addConverter(toUppercase);
-
-  }
 
   @PostConstruct
   public void initFirmInfoMapper() {

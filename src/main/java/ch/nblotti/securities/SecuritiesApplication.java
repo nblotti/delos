@@ -2,6 +2,7 @@ package ch.nblotti.securities;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -41,19 +42,14 @@ public class SecuritiesApplication {
 
   @Bean
   public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
-    return restTemplateBuilder
+    RestTemplate rt = restTemplateBuilder
       .setConnectTimeout(Duration.ofSeconds(30))
       .setReadTimeout(Duration.ofSeconds(30))
       .build();
-  }
-
-  @Bean
-  public RestTemplate restTemplate() {
-    RestTemplate rt = new RestTemplate();
     rt.getMessageConverters().add(new StringHttpMessageConverter());
     return rt;
-
   }
+
 
   @Bean
   public ModelMapper modelMapper() {

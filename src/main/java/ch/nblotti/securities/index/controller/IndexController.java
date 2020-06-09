@@ -1,7 +1,8 @@
 package ch.nblotti.securities.index.controller;
 
 
-import ch.nblotti.securities.index.service.IndexCompositionService;
+import ch.nblotti.securities.firm.to.IndexQuoteTO;
+import ch.nblotti.securities.index.service.IndexService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,11 +14,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/index")
-public class IndexCompositionController {
+public class IndexController {
 
   private static final Logger logger = Logger.getLogger("Sp500IndexController");
 
@@ -28,14 +30,21 @@ public class IndexCompositionController {
 
 
   @Autowired
-  IndexCompositionService indexCompositionService;
+  IndexService indexService;
 
 
-  @PostMapping(value = "/load")
-  public void load(@RequestParam(name = "date", required = true) LocalDate localDate, @RequestParam(name = "index", required = true) String index) {
+  @PostMapping(value = "/loadindexcomposition")
+  public void loadIndexComposition(@RequestParam(name = "date", required = true) LocalDate localDate, @RequestParam(name = "index", required = true) String index) {
 
+    indexService.loadSPCompositionAtDate(localDate, index);
 
-    indexCompositionService.loadSPCompositionAtDate(localDate, index);
+  }
+
+  @PostMapping(value = "/loadquoteforindex")
+  public void loadIndexQuote(@RequestParam(name = "fromdate", required = true) LocalDate fromDate, @RequestParam(name = "todate", required = true) LocalDate toDate, @RequestParam(name = "index", required = true) String index) {
+
+    List<IndexQuoteTO> indexQuoteTO = indexService.getIndexDataByDate(fromDate, toDate, index);
+    indexService.saveAll(indexQuoteTO);
 
   }
 

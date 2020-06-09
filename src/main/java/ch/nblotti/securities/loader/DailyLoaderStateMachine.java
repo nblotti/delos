@@ -3,7 +3,7 @@ package ch.nblotti.securities.loader;
 import ch.nblotti.securities.JpaDao;
 import ch.nblotti.securities.firm.service.FirmService;
 import ch.nblotti.securities.firm.to.*;
-import ch.nblotti.securities.index.service.IndexCompositionService;
+import ch.nblotti.securities.index.service.IndexService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +56,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
   public String nyseClosedDays;
 
   @Autowired
-  IndexCompositionService indexCompositionService;
+  IndexService indexService;
   @Autowired
   private BeanFactory beanFactory;
 
@@ -89,6 +89,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
       .state(LOADER_STATES.GET_DATES, getDates())
       .state(LOADER_STATES.LOAD_NYSE, loadNYSE())
       .state(LOADER_STATES.LOAD_NASDAQ, loadNASDAQ())
+      .state(LOADER_STATES.LOAD_INDEX, loadIndex())
       .state(LOADER_STATES.SAVE_FIRM, saveFirms())
       .state(LOADER_STATES.REFRESH_MAT_VIEWS, refreshMaterializedViews())
       .end(LOADER_STATES.DONE);
@@ -108,14 +109,17 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
       .withExternal()
       .source(LOADER_STATES.GET_DATES).target(LOADER_STATES.DONE).event(LOADER_EVENTS.END_OF_WEEK_OR_DAY_OFF)
       .and()
-      .withLocal()
+      .withExternal()
       .source(LOADER_STATES.LOAD_NYSE).target(LOADER_STATES.LOAD_NASDAQ)
       .and()
       .withLocal()
       .source(LOADER_STATES.LOAD_NASDAQ).target(LOADER_STATES.SAVE_FIRM)
       .and()
       .withLocal()
-      .source(LOADER_STATES.SAVE_FIRM).target(LOADER_STATES.REFRESH_MAT_VIEWS)
+      .source(LOADER_STATES.SAVE_FIRM).target(LOADER_STATES.LOAD_INDEX)
+      .and()
+      .withLocal()
+      .source(LOADER_STATES.LOAD_INDEX).target(LOADER_STATES.REFRESH_MAT_VIEWS)
       .and()
       .withLocal()
       .source(LOADER_STATES.REFRESH_MAT_VIEWS).target(LOADER_STATES.DONE);
@@ -162,9 +166,9 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
           context.getExtendedState().getVariables().put("runPartial", runPartial);
 
         if (runDate.getDayOfMonth() == 1) {
-          String indexes[] = indexList.split(",");
+          String[] indexes = getIndexList();
           for (String index : indexes)
-            indexCompositionService.loadSPCompositionAtDate(runDate, index);
+            indexService.loadSPCompositionAtDate(runDate, index);
         }
 
 
@@ -185,6 +189,10 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
         context.getStateMachine().sendEvent(message);
       }
     };
+  }
+
+  private String[] getIndexList() {
+    return indexList.split(",");
   }
 
 
@@ -253,6 +261,25 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
 
         if (Boolean.FALSE == runPartial)
           loadDetails(firms, runDate);
+
+      }
+    };
+  }
+
+  @Bean
+  public Action<LOADER_STATES, LOADER_EVENTS> loadIndex() {
+    return new Action<LOADER_STATES, LOADER_EVENTS>() {
+
+      @Override
+      public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> context) {
+
+        FirmService firmService = beanFactory.getBean(FirmService.class);
+        LocalDate runDate = (LocalDate) context.getExtendedState().getVariables().get("runDate");
+        String[] indexes = getIndexList();
+        for (String index : indexes) {
+          List<IndexQuoteTO> indexQuoteTO = indexService.getIndexDataByDate(runDate, runDate, index);
+          indexService.saveAll(indexQuoteTO);
+        }
 
         finalAction(runDate);
       }
