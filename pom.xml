@@ -9,7 +9,7 @@
   </parent>
   <groupId>ch.nblotti</groupId>
   <artifactId>delos</artifactId>
-  <version>0.0.87</version>
+  <version>0.0.88-SNAPSHOT</version>
   <name>delos</name>
   <description>Security Manager</description>
 
@@ -25,7 +25,7 @@
     <url>https://github.com/nblotti/idp.git</url>
     <connection>scm:git:git://git@github.com/nblotti/delos.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/nblotti/delos.git</developerConnection>
-    <tag>delos-0.0.87</tag>
+    <tag>delos-0.0.70</tag>
   </scm>
 
 
