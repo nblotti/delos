@@ -47,6 +47,9 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
   @Autowired
   private DateTimeFormatter format1;
 
+  @Autowired
+  private DateTimeFormatter formatMessage;
+
   RabbitMQSender rabbitMQSender;
 
   public static final String EVENT_MESSAGE_DAY = "firms";
@@ -302,7 +305,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
         LocalDateTime runTimeEnd = LocalDateTime.now();
         String process = String.format("Daily loading process runDate = %s", runDate.format(format1));
         jpaDao.requireRefresh();
-        LoadingEvent loadingEvent = new LoadingEvent(process, LoadingEvent.STATUS.SUCCESS, runTimeStart.format(format1), runTimeEnd.format(format1));
+        LoadingEvent loadingEvent = new LoadingEvent(process, LoadingEvent.STATUS.SUCCESS, runTimeStart.format(formatMessage), runTimeEnd.format(formatMessage));
         rabbitMQSender.send(loadingEvent);
       }
     };

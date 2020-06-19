@@ -34,6 +34,9 @@ public class LoaderController {
   @Autowired
   private DateTimeFormatter format1;
 
+  @Autowired
+  private DateTimeFormatter formatMessage;
+
 
   @Autowired
   ConfigRepository configRepository;
@@ -47,7 +50,7 @@ public class LoaderController {
   @GetMapping(value = "/testMQ")
   public void testMQ() {
 
-    LoadingEvent loadingEvent = new LoadingEvent("test", LoadingEvent.STATUS.SUCCESS, LocalDateTime.now().format(format1), LocalDateTime.now().format(format1));
+    LoadingEvent loadingEvent = new LoadingEvent("test", LoadingEvent.STATUS.SUCCESS, LocalDateTime.now().format(formatMessage), LocalDateTime.now().format(formatMessage));
     rabbitMQSender.send(loadingEvent);
   }
 

@@ -40,6 +40,10 @@ public class SecuritiesApplication {
   @Value("${global.date-format}")
   public String dateFormat;
 
+
+  @Value("${message.date-format}")
+  public String messageDateFormat;
+
   public static void main(String[] args) {
     SpringApplication.run(SecuritiesApplication.class, args);
   }
@@ -64,6 +68,11 @@ public class SecuritiesApplication {
   @Bean
   public DateTimeFormatter format1() {
     return DateTimeFormatter.ofPattern(dateFormat);
+  }
+
+  @Bean
+  public DateTimeFormatter formatMessage() {
+    return DateTimeFormatter.ofPattern(messageDateFormat);
   }
 
   @Bean
