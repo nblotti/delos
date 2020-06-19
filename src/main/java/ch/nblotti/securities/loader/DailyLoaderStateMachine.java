@@ -25,6 +25,7 @@ import org.springframework.statemachine.config.builders.StateMachineTransitionCo
 import javax.annotation.PostConstruct;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +46,8 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
 
   @Autowired
   private DateTimeFormatter format1;
+
+  RabbitMQSender rabbitMQSender;
 
   public static final String EVENT_MESSAGE_DAY = "firms";
 
@@ -135,6 +138,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
 
         context.getExtendedState().getVariables().put("runDate", LocalDate.now().minusDays(1));
         context.getExtendedState().getVariables().put("runPartial", Boolean.TRUE);
+        context.getExtendedState().getVariables().put("runTime", LocalDateTime.now());
 
       }
     };
@@ -292,7 +296,14 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
     return new Action<LOADER_STATES, LOADER_EVENTS>() {
       @Override
       public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> context) {
+
+        LocalDateTime runTimeStart = (LocalDateTime) context.getExtendedState().getVariables().get("runTime");
+        LocalDateTime runDate = (LocalDateTime) context.getExtendedState().getVariables().get("runDate");
+        LocalDateTime runTimeEnd = LocalDateTime.now();
+        String process = String.format("Daily loading process runDate = %s", runDate.format(format1));
         jpaDao.requireRefresh();
+        LoadingEvent loadingEvent = new LoadingEvent(process, LoadingEvent.STATUS.SUCCESS, runTimeStart.format(format1), runTimeEnd.format(format1));
+        rabbitMQSender.send(loadingEvent);
       }
     };
   }

@@ -2,7 +2,12 @@ package ch.nblotti.securities;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.FanoutExchange;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -84,5 +89,24 @@ public class SecuritiesApplication {
     };
   }
 
+  @Bean
+  public MessageConverter jsonMessageConverter() {
+    return new Jackson2JsonMessageConverter();
+  }
+
+  @Bean
+  public Queue loaderEvent() {
+    return new Queue("loader_event");
+  }
+
+  @Bean
+  FanoutExchange loaderExchange() {
+    return new FanoutExchange("loader_exchange");
+  }
+
+  @Bean
+  public Binding bindingFanoutExchangeQueueEFanout(FanoutExchange loaderExchange, Queue loaderEvent) {
+    return BindingBuilder.bind(loaderEvent).to(loaderExchange);
+  }
 
 }

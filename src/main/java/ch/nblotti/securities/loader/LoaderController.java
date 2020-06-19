@@ -8,10 +8,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.statemachine.StateMachine;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,6 +40,17 @@ public class LoaderController {
 
   @Autowired
   private BeanFactory beanFactory;
+
+  @Autowired
+  RabbitMQSender rabbitMQSender;
+
+  @GetMapping(value = "/testMQ")
+  public void testMQ() {
+
+    LoadingEvent loadingEvent = new LoadingEvent("test", LoadingEvent.STATUS.SUCCESS, LocalDateTime.now().format(format1), LocalDateTime.now().format(format1));
+    rabbitMQSender.send(loadingEvent);
+  }
+
 
   @PostMapping(value = "/load")
   public void load(@RequestParam(name = "startyear", required = true) Integer startYear,
@@ -97,10 +105,10 @@ public class LoaderController {
       throw new IllegalArgumentException("End month or start month cannot be bigger than 12. start month cannot be bigger than end month");
     }
 
-    startLoad(startYear, startMonth, startDay, endYear, endMonth,endDay, Boolean.FALSE);
+    startLoad(startYear, startMonth, startDay, endYear, endMonth, endDay, Boolean.FALSE);
   }
 
-  private void startLoad(Integer startYear,Integer startMonth, Integer startDay,  Integer endYear, Integer endMonth, Integer endDay, Boolean runPartial) {
+  private void startLoad(Integer startYear, Integer startMonth, Integer startDay, Integer endYear, Integer endMonth, Integer endDay, Boolean runPartial) {
 
     Optional<ConfigTO> config = configRepository.findByCodeAndType("DAILY_JOB_RUNNING", LocalDate.now().format(format1));
     if (config.isPresent()) {
