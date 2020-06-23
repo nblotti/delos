@@ -1,6 +1,8 @@
 drop view IF EXISTS sp_sector_repartition CASCADE;
 CREATE view  sp_sector_repartition as
-select date,
+select ROW_NUMBER () OVER (ORDER BY date asc)
+id,
+date,
        round("Real Estate", 2)            real_estate,
        round("Real Estate" /
              ("Real Estate" + "Healthcare" + "Basic Materials" + "Industrials" + "Consumer Cyclical" + "Energy" +
