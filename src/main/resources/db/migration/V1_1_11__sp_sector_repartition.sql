@@ -1,6 +1,7 @@
 drop view IF EXISTS sp_sector_repartition CASCADE;
-CREATE view  sp_sector_repartition as
-select ROW_NUMBER () OVER (ORDER BY date asc)
+CREATE view sp_sector_repartition as
+select ROW_NUMBER() OVER (
+ORDER BY date asc)
 id,
 date,
        round("Real Estate", 2)            real_estate,
@@ -78,4 +79,79 @@ FROM crosstab(
                   "Communication Services" numeric
     );
 
+drop view if exists top_winers_loosers_gainers_sp;
 
+create view top_winers_loosers_gainers_sp as
+select id,
+       myrank,
+       1 as view_type,
+       date,
+       code,
+       exchange,
+       current_exchange,
+       sector,
+       industry,
+       name,
+       type,
+       isin,
+       cusip,
+       updated_at,
+       adjusted_close,
+       previous_adjusted_close,
+       volume,
+       last_move
+from (
+         select RANK() OVER (PARTITION BY mv.sector
+         ORDER BY mv.last_move asc) myrank,
+     mv.* from  index_composition ic, mv_movers_volume mv where ic.code_firm = mv.code and ic.date = (select distinct date from index_composition order by date desc limit 1)) t
+where t.myrank <= 10
+union
+select id,
+       myrank,
+       2 as view_type,
+       date,
+       code,
+       exchange,
+       current_exchange,
+       sector,
+       industry,
+       name,
+       type,
+       isin,
+       cusip,
+       updated_at,
+       adjusted_close,
+       previous_adjusted_close,
+       volume,
+       last_move
+from (
+         select RANK() OVER (PARTITION BY mv.sector
+         ORDER BY mv.last_move desc) myrank,
+     mv.* from  index_composition ic, mv_movers_volume mv
+where ic.code_firm = mv.code and ic.date = (select distinct date from index_composition order by date desc limit 1)) t
+where t.myrank <= 10
+union
+select id,
+       myrank,
+       3 as view_type,
+       date,
+       code,
+       exchange,
+       current_exchange,
+       sector,
+       industry,
+       name,
+       type,
+       isin,
+       cusip,
+       updated_at,
+       adjusted_close,
+       previous_adjusted_close,
+       volume,
+       last_move
+from (
+         select RANK() OVER (PARTITION BY mv.sector
+         ORDER BY mv.volume desc) myrank,
+     mv.* from  index_composition ic, mv_movers_volume mv
+where ic.code_firm = mv.code and ic.date = (select distinct date from index_composition order by date desc limit 1)) t
+where t.myrank <= 10
