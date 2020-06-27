@@ -301,7 +301,7 @@ public class DailyLoaderStateMachine extends EnumStateMachineConfigurerAdapter<L
       public void execute(StateContext<LOADER_STATES, LOADER_EVENTS> context) {
 
         LocalDateTime runTimeStart = (LocalDateTime) context.getExtendedState().getVariables().get("runTime");
-        LocalDateTime runDate = (LocalDateTime) context.getExtendedState().getVariables().get("runDate");
+        LocalDate runDate = (LocalDate) context.getExtendedState().getVariables().get("runDate");
         LocalDateTime runTimeEnd = LocalDateTime.now();
         String process = String.format("Daily loading process runDate = %s", runDate.format(format1));
         jpaDao.requireRefresh();
