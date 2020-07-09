@@ -8,10 +8,10 @@
     <relativePath /> <!-- lookup parent from repository -->
   </parent>
   <groupId>ch.nblotti</groupId>
-  <artifactId>delos</artifactId>
+  <artifactId>Delos</artifactId>
   <version>0.0.91-SNAPSHOT</version>
-  <name>delos</name>
-  <description>Security Manager</description>
+  <name>Delos</name>
+  <description>Delos</description>
 
   <distributionManagement>
     <repository>
@@ -22,10 +22,10 @@
   </distributionManagement>
 
   <scm>
-    <url>https://github.com/nblotti/idp.git</url>
-    <connection>scm:git:git://git@github.com/nblotti/delos.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/nblotti/delos.git</developerConnection>
-    <tag>delos-0.0.70</tag>
+    <url>https://github.com/nblotti/Delos.git</url>
+    <connection>scm:git:git://git@github.com/nblotti/Delos.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/nblotti/Delos.git</developerConnection>
+    <tag>Delos-0.0.70</tag>
   </scm>
 
 

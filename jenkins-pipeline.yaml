@@ -1,6 +1,6 @@
   pipeline {
     environment {
-    registry = "nblotti/delos"
+    registry = "nblotti/Delos"
     registryCredential = 'dockerhub_id'
     dockerImage = ''
 
@@ -23,7 +23,7 @@
     }
     stage('Cloning our Git') {
     steps {
-    git 'git@github.com:nblotti/delos.git'
+    git 'git@github.com:nblotti/Delos.git'
 
   }
 
