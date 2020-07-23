@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `account`
+CREATE TABLE IF NOT EXISTS account
 (
 
     ID            SERIAL PRIMARY KEY,
