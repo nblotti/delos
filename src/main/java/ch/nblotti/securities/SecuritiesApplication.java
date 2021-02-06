@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @EnableCaching
-@EnableScheduling
 @PropertySource(value = "classpath:override.properties", ignoreResourceNotFound = true)
 public class SecuritiesApplication {
 
@@ -60,26 +59,23 @@ public class SecuritiesApplication {
   }
 
 
-  @Bean
-  public ModelMapper modelMapper() {
-    return new ModelMapper();
-  }
 
   @Bean
   public DateTimeFormatter format1() {
     return DateTimeFormatter.ofPattern(dateFormat);
   }
 
-  @Bean
-  public DateTimeFormatter formatMessage() {
-    return DateTimeFormatter.ofPattern(messageDateFormat);
-  }
 
   @Bean
   public Cache cacheOne() {
     return new CaffeineCache(CACHE_NAME, Caffeine.newBuilder()
       .expireAfterWrite(30, TimeUnit.SECONDS)
       .build());
+  }
+
+  @Bean
+  public ModelMapper modelMapper() {
+    return new ModelMapper();
   }
 
   @Bean
@@ -103,19 +99,5 @@ public class SecuritiesApplication {
     return new Jackson2JsonMessageConverter();
   }
 
-  @Bean
-  public Queue loaderEvent() {
-    return new Queue("loader_event");
-  }
-
-  @Bean
-  FanoutExchange loaderExchange() {
-    return new FanoutExchange("loader_exchange");
-  }
-
-  @Bean
-  public Binding bindingFanoutExchangeQueueEFanout(FanoutExchange loaderExchange, Queue loaderEvent) {
-    return BindingBuilder.bind(loaderEvent).to(loaderExchange);
-  }
 
 }
