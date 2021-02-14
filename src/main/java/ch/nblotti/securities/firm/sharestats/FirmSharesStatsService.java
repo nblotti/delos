@@ -28,24 +28,6 @@ public class FirmSharesStatsService {
   @Autowired
   private FirmSharesStatsRepository firmSharesStatsRepository;
 
-  private EODFirmSharesStatsRepository EODFirmSharesStatsRepository;
-
-
-  public Optional<FirmShareStatsDTO> getSharesStatByDateAndFirm(LocalDate runDate, String exchange, String symbol) {
-    Optional<EODSharesStatsDTO> eODSharesStatsDTO = EODFirmSharesStatsRepository.getSharesStatByDateAndExchangeAndFirm(runDate, exchange, symbol);
-
-    if (!eODSharesStatsDTO.isPresent())
-      return Optional.empty();
-
-    FirmShareStatsDTO fSpost = modelMapper.map(eODSharesStatsDTO.get(), FirmShareStatsDTO.class);
-    fSpost.setExchange(exchange);
-    fSpost.setDate(runDate);
-    fSpost.setCode(symbol);
-
-    return Optional.of(fSpost);
-
-
-  }
 
   public FirmShareStatsDTO save(FirmShareStatsDTO entity) {
 
@@ -109,30 +91,5 @@ public class FirmSharesStatsService {
 
   }
 
-
-  @PostConstruct
-  public void initShareStatsMapper() {
-
-    Converter<EODSharesStatsDTO, FirmShareStatsDTO> toUppercase = new AbstractConverter<EODSharesStatsDTO, FirmShareStatsDTO>() {
-
-      @Override
-      protected FirmShareStatsDTO convert(EODSharesStatsDTO sharesStatsDTO) {
-        FirmShareStatsDTO firmEODShareStatsTO = new FirmShareStatsDTO();
-        firmEODShareStatsTO.setSharesOutstanding(sharesStatsDTO.getSharesOutstanding());
-        firmEODShareStatsTO.setSharesFloat(sharesStatsDTO.getSharesFloat());
-        firmEODShareStatsTO.setPercentInsiders(sharesStatsDTO.getPercentInsiders());
-        firmEODShareStatsTO.setPercentInstitutions(sharesStatsDTO.getPercentInstitutions());
-        firmEODShareStatsTO.setSharesShort(sharesStatsDTO.getSharesShort());
-        firmEODShareStatsTO.setSharesShortPriorMonth(sharesStatsDTO.getSharesShortPriorMonth());
-        firmEODShareStatsTO.setShortRatio(sharesStatsDTO.getShortRatio());
-        firmEODShareStatsTO.setShortPercentOutstanding(sharesStatsDTO.getShortPercentOutstanding());
-        firmEODShareStatsTO.setShortPercentFloat(sharesStatsDTO.getShortPercentFloat());
-        return firmEODShareStatsTO;
-      }
-    };
-
-    modelMapper.addConverter(toUppercase);
-
-  }
 
 }

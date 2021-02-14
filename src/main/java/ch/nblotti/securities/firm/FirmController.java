@@ -1,6 +1,16 @@
 package ch.nblotti.securities.firm;
 
 
+import ch.nblotti.securities.firm.highlights.FirmHighlightsDTO;
+import ch.nblotti.securities.firm.highlights.FirmHighlightsService;
+import ch.nblotti.securities.firm.infos.FirmInfoDTO;
+import ch.nblotti.securities.firm.infos.FirmInfoService;
+import ch.nblotti.securities.firm.quote.FirmQuoteDTO;
+import ch.nblotti.securities.firm.quote.FirmQuoteService;
+import ch.nblotti.securities.firm.sharestats.FirmShareStatsDTO;
+import ch.nblotti.securities.firm.sharestats.FirmSharesStatsService;
+import ch.nblotti.securities.firm.valuation.FirmValuationDTO;
+import ch.nblotti.securities.firm.valuation.FirmValuationService;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.TypeRef;
@@ -19,6 +29,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/firm")
@@ -26,6 +37,21 @@ public class FirmController {
 
   @Autowired
   DateTimeFormatter dateTimeFormatter;
+
+  @Autowired
+  FirmQuoteService firmQuoteService;
+
+  @Autowired
+  FirmInfoService firmInfoService;
+
+  @Autowired
+  FirmHighlightsService firmHighlightsService;
+
+  @Autowired
+  FirmSharesStatsService firmSharesStatsService;
+
+  @Autowired
+  FirmValuationService firmValuationService;
 
   @Autowired
   RestTemplate restTemplate;
@@ -75,14 +101,47 @@ public class FirmController {
 
     String requestBodyJson = String.format(requestBody, firmName, dateTimeFormatter.format(date));
     HttpHeaders headers = new HttpHeaders();
-    headers.setAccept(Arrays.asList(new MediaType[] { MediaType.APPLICATION_JSON }));
+    headers.setAccept(Arrays.asList(new MediaType[]{MediaType.APPLICATION_JSON}));
     headers.setContentType(MediaType.APPLICATION_JSON);
     headers.set("X-Api-Key", ftApiKey);
-    HttpEntity<String> request = new HttpEntity<String>(requestBodyJson,headers);
+    HttpEntity<String> request = new HttpEntity<String>(requestBodyJson, headers);
 
     return
       restTemplate.exchange(ftServerArticlesApi, HttpMethod.POST, request, String.class);
 
+
+  }
+
+
+  @PostMapping(value = "/exchange")
+  public Iterable<FirmQuoteDTO> saveAllEODMarketQuotes(List<FirmQuoteDTO> firmsTOs) {
+    return firmQuoteService.saveAllEODMarketQuotes(firmsTOs);
+  }
+
+  @PostMapping(value = "/info")
+  public FirmInfoDTO save(FirmInfoDTO firmInfoDTO) {
+
+    return firmInfoService.save(firmInfoDTO);
+  }
+
+  @PostMapping(value = "/valuation")
+  public FirmValuationDTO save(FirmValuationDTO firmValuationDTO) {
+
+    return firmValuationService.save(firmValuationDTO);
+
+  }
+
+
+  @PostMapping(value = "/highlight")
+  public FirmHighlightsDTO save( FirmHighlightsDTO firmHighlightsDTO) {
+    return firmHighlightsService.save(firmHighlightsDTO);
+
+  }
+
+  @PostMapping(value = "/sharestat")
+  public FirmShareStatsDTO save(FirmShareStatsDTO firmShareStatsDTO) {
+
+    return firmSharesStatsService.save(firmShareStatsDTO);
 
   }
 

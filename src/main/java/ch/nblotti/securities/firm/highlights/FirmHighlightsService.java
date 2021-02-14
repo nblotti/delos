@@ -5,12 +5,14 @@ import ch.nblotti.securities.firm.quote.FirmQuoteDTO;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -26,8 +28,6 @@ public class FirmHighlightsService {
   public static final String FIRM_MAP = "firmsMap";
 
 
-  @Autowired
-  private EODFirmHighlightsRepository EODFirmHighlightsRepository;
 
   @Autowired
   private FirmHighlightsRepository firmHighlightsRepository;
@@ -36,25 +36,6 @@ public class FirmHighlightsService {
   @Autowired
   protected ModelMapper modelMapper;
 
-
-
-  public Optional<FirmHighlightsDTO> getHighlightsByDateAndFirm(LocalDate runDate, FirmQuoteDTO firmEODQuoteTO) {
-
-
-    String exchange = firmEODQuoteTO.getExchangeShortName();
-    String symbol = firmEODQuoteTO.getCode();
-
-    Optional<EODFirmHighlightsDTO> EODFirmHighlightsDTO = EODFirmHighlightsRepository.getHighlightsByDateAndFirm(runDate, exchange, symbol);
-
-    if (!EODFirmHighlightsDTO.isPresent())
-      return Optional.empty();
-
-    FirmHighlightsDTO fHpost = modelMapper.map(EODFirmHighlightsDTO.get(), FirmHighlightsDTO.class);
-    fHpost.setExchange(exchange);
-    fHpost.setDate(runDate);
-    fHpost.setCode(symbol);
-    return Optional.of(fHpost);
-  }
 
 
   public FirmHighlightsDTO findTopByCodeOrderByDate(String code) {
@@ -69,6 +50,17 @@ public class FirmHighlightsService {
       .map(n -> modelMapper.map(n, FirmHighlightsDTO.class))
       .collect(Collectors.toList());
   }
+
+  public Iterable<FirmHighlightsDTO> saveAll(Iterable<FirmHighlightsDTO> firmHighlightsDTO) {
+
+    Iterable<FirmHighlightsTO> firmHighlightsTO = modelMapper.map(firmHighlightsDTO, new TypeToken<Iterable<FirmHighlightsTO>>() {}.getType());
+
+    Iterable<FirmHighlightsTO> saved = firmHighlightsRepository.saveAll(firmHighlightsTO);
+
+    return modelMapper.map(saved, new TypeToken<List<FirmHighlightsDTO>>() {}.getType());
+  }
+
+
 
   public FirmHighlightsDTO save(FirmHighlightsDTO firmHighlightsDTO) {
     FirmHighlightsTO firmHighlightsTO = modelMapper.map(firmHighlightsDTO, FirmHighlightsTO.class);
@@ -112,48 +104,6 @@ public class FirmHighlightsService {
         firmHighlightsDTO.setGrossProfitTTM(firmEODHighlightsTO.getGrossProfitTTM());
         firmHighlightsDTO.setDilutedEpsTTM(firmEODHighlightsTO.getDilutedEpsTTM());
         firmHighlightsDTO.setQuarterlyEarningsGrowthYOY(firmEODHighlightsTO.getQuarterlyEarningsGrowthYOY());
-
-        return firmHighlightsDTO;
-      }
-    };
-
-    modelMapper.addConverter(toUppercase);
-
-  }
-
-  @PostConstruct
-  public void initFirmHighlightsMapper() {
-
-    Converter<EODFirmHighlightsDTO, FirmHighlightsDTO> toUppercase = new AbstractConverter<EODFirmHighlightsDTO, FirmHighlightsDTO>() {
-
-      @Override
-      protected FirmHighlightsDTO convert(EODFirmHighlightsDTO eODFirmHighlightsDTO) {
-        FirmHighlightsDTO firmHighlightsDTO = new FirmHighlightsDTO();
-        firmHighlightsDTO.setMarketCapitalization(eODFirmHighlightsDTO.getMarketCapitalization());
-        firmHighlightsDTO.setMarketCapitalizationMln(eODFirmHighlightsDTO.getMarketCapitalizationMln());
-        firmHighlightsDTO.seteBITDA(eODFirmHighlightsDTO.getEBITDA());
-        firmHighlightsDTO.setpERatio(eODFirmHighlightsDTO.getPERatio());
-        firmHighlightsDTO.setpEGRatio(eODFirmHighlightsDTO.getPEGRatio());
-        firmHighlightsDTO.setWallStreetTargetPrice(eODFirmHighlightsDTO.getWallStreetTargetPrice());
-        firmHighlightsDTO.setBookValue(eODFirmHighlightsDTO.getBookValue());
-        firmHighlightsDTO.setDividendShare(eODFirmHighlightsDTO.getDividendShare());
-        firmHighlightsDTO.setDividendYield(eODFirmHighlightsDTO.getDividendYield());
-        firmHighlightsDTO.setEarningsShare(eODFirmHighlightsDTO.getEarningsShare());
-        firmHighlightsDTO.setePSEstimateCurrentYear(eODFirmHighlightsDTO.getEPSEstimateCurrentYear());
-        firmHighlightsDTO.setePSEstimateNextYear(eODFirmHighlightsDTO.getEPSEstimateNextYear());
-        firmHighlightsDTO.setePSEstimateNextQuarter(eODFirmHighlightsDTO.getEPSEstimateNextQuarter());
-        firmHighlightsDTO.setePSEstimateCurrentQuarter(eODFirmHighlightsDTO.getEPSEstimateCurrentQuarter());
-        firmHighlightsDTO.setMostRecentQuarter(eODFirmHighlightsDTO.getMostRecentQuarter());
-        firmHighlightsDTO.setProfitMargin(eODFirmHighlightsDTO.getProfitMargin());
-        firmHighlightsDTO.setOperatingMarginTTM(eODFirmHighlightsDTO.getOperatingMarginTTM());
-        firmHighlightsDTO.setReturnOnAssetsTTM(eODFirmHighlightsDTO.getReturnOnAssetsTTM());
-        firmHighlightsDTO.setReturnOnEquityTTM(eODFirmHighlightsDTO.getReturnOnEquityTTM());
-        firmHighlightsDTO.setRevenueTTM(eODFirmHighlightsDTO.getRevenueTTM());
-        firmHighlightsDTO.setRevenuePerShareTTM(eODFirmHighlightsDTO.getRevenuePerShareTTM());
-        firmHighlightsDTO.setQuarterlyRevenueGrowthYOY(eODFirmHighlightsDTO.getQuarterlyRevenueGrowthYOY());
-        firmHighlightsDTO.setGrossProfitTTM(eODFirmHighlightsDTO.getGrossProfitTTM());
-        firmHighlightsDTO.setDilutedEpsTTM(eODFirmHighlightsDTO.getDilutedEpsTTM());
-        firmHighlightsDTO.setQuarterlyEarningsGrowthYOY(eODFirmHighlightsDTO.getQuarterlyEarningsGrowthYOY());
 
         return firmHighlightsDTO;
       }

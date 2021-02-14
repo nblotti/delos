@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.time.LocalDate;
-import java.util.Optional;
 import java.util.logging.Logger;
 
 
@@ -20,50 +18,73 @@ public class FirmValuationService {
 
 
   @Autowired
-  private EODFirmValuationRepository EODFirmValuationRepository;
-
-  @Autowired
   private FirmValuationRepository firmValuationRepository;
 
 
   @Autowired
   protected ModelMapper modelMapper;
 
+  public FirmValuationDTO save(FirmValuationDTO entity) {
 
-  public Optional<FirmValuationDTO> getValuationByDateAndFirm(LocalDate runDate, String exchange, String symbol) {
-    Optional<EODValuationDTO> eODValuationDTO = EODFirmValuationRepository.getValuationByDateAndFirm(runDate, exchange, symbol);
+    FirmValuationTO firmEODInfoTO = modelMapper.map(entity, FirmValuationTO.class);
 
-    if (!eODValuationDTO.isPresent())
-      return Optional.empty();
+    FirmValuationTO saved = firmValuationRepository.save(firmEODInfoTO);
 
-    FirmValuationDTO fVpost = modelMapper.map(eODValuationDTO, FirmValuationDTO.class);
-    fVpost.setExchange(exchange);
-    fVpost.setDate(runDate);
-    fVpost.setCode(symbol);
-    return Optional.of(fVpost);
+    return modelMapper.map(saved, FirmValuationDTO.class);
 
   }
 
 
   @PostConstruct
-  public void initValuationMapper() {
+  public void initFirmValuationDTOMapper() {
 
-    Converter<EODValuationDTO, FirmValuationDTO> toUppercase = new AbstractConverter<EODValuationDTO, FirmValuationDTO>() {
+    Converter<FirmValuationDTO, FirmValuationTO> toUppercase = new AbstractConverter<FirmValuationDTO, FirmValuationTO>() {
 
       @Override
-      protected FirmValuationDTO convert(EODValuationDTO valuationDTO) {
-        FirmValuationDTO firmEODValuationTO = new FirmValuationDTO();
-        firmEODValuationTO.setForwardPE(valuationDTO.getForwardPE());
-        firmEODValuationTO.setTrailingPE(valuationDTO.getTrailingPE());
-        firmEODValuationTO.setPriceSalesTTM(valuationDTO.getPriceSalesTTM());
-        firmEODValuationTO.setPriceBookMRQ(valuationDTO.getPriceBookMRQ());
-        firmEODValuationTO.setEnterpriseValueRevenue(valuationDTO.getEnterpriseValueRevenue());
-        firmEODValuationTO.setEnterpriseValueEbitda(valuationDTO.getEnterpriseValueEbitda());
-        return firmEODValuationTO;
+      protected FirmValuationTO convert(FirmValuationDTO firmValuationDTO) {
+        FirmValuationTO firmValuationTO = new FirmValuationTO();
+        firmValuationTO.setDate(firmValuationDTO.getDate());
+        firmValuationTO.setCode(firmValuationDTO.getCode());
+        firmValuationTO.setExchange(firmValuationDTO.getExchange());
+        firmValuationTO.setTrailingPE(firmValuationDTO.getTrailingPE());
+        firmValuationTO.setForwardPE(firmValuationDTO.getForwardPE());
+        firmValuationTO.setPriceSalesTTM(firmValuationDTO.getPriceSalesTTM());
+        firmValuationTO.setPriceBookMRQ(firmValuationDTO.getPriceBookMRQ());
+        firmValuationTO.setEnterpriseValueRevenue(firmValuationDTO.getEnterpriseValueRevenue());
+        firmValuationTO.setEnterpriseValueEbitda(firmValuationDTO.getEnterpriseValueEbitda());
+        return firmValuationTO;
       }
     };
 
     modelMapper.addConverter(toUppercase);
 
   }
+
+
+  @PostConstruct
+  public void initFirmValuationTOMapper() {
+
+    Converter<FirmValuationTO, FirmValuationDTO> toUppercase = new AbstractConverter<FirmValuationTO, FirmValuationDTO>() {
+
+      @Override
+      protected FirmValuationDTO convert(FirmValuationTO firmValuationTO) {
+        FirmValuationDTO firmValuationDTO = new FirmValuationDTO();
+        firmValuationDTO.setDate(firmValuationTO.getDate());
+        firmValuationDTO.setCode(firmValuationTO.getCode());
+        firmValuationDTO.setExchange(firmValuationTO.getExchange());
+        firmValuationDTO.setTrailingPE(firmValuationTO.getTrailingPE());
+        firmValuationDTO.setForwardPE(firmValuationTO.getForwardPE());
+        firmValuationDTO.setPriceSalesTTM(firmValuationTO.getPriceSalesTTM());
+        firmValuationDTO.setPriceBookMRQ(firmValuationTO.getPriceBookMRQ());
+        firmValuationDTO.setEnterpriseValueRevenue(firmValuationTO.getEnterpriseValueRevenue());
+        firmValuationDTO.setEnterpriseValueEbitda(firmValuationTO.getEnterpriseValueEbitda());
+        return firmValuationDTO;
+      }
+    };
+
+    modelMapper.addConverter(toUppercase);
+
+  }
+
+
 }

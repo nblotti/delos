@@ -4,6 +4,7 @@ package ch.nblotti.securities.index.composition;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,9 +27,6 @@ public class IndexCompositionService {
 
 
   @Autowired
-  private EODIndexCompositionRepository EODIndexCompositionRepository;
-
-  @Autowired
   private IndexCompositionRepository indexCompositionRepository;
 
 
@@ -40,23 +38,21 @@ public class IndexCompositionService {
   protected DateTimeFormatter format1;
 
 
-  public List<IndexCompositionDTO> getIndexDataByDate(LocalDate runDate, String index) {
 
-    List<IndexCompositionDTO> indexCompositionDTOs = new ArrayList<>();
+  public Iterable<IndexCompositionDTO> saveIndexComposition(Collection<IndexCompositionDTO> indexCompositionDTOS) {
 
-    Collection<EODIndexCompositionDTO> EODIndexCompositionDTOS = EODIndexCompositionRepository.getIndexCompositionAtDate(runDate, index);
+    Iterable<IndexCompositionTO> loaded = modelMapper.map(indexCompositionDTOS, new TypeToken<Iterable<IndexCompositionTO>>() {
+    }.getType());
 
-    for (EODIndexCompositionDTO current : EODIndexCompositionDTOS) {
+    Iterable<IndexCompositionTO> saved = indexCompositionRepository.saveAll(loaded);
 
-      IndexCompositionDTO fHpost = modelMapper.map(current, IndexCompositionDTO.class);
-      fHpost.setDate(runDate);
-      indexCompositionDTOs.add(fHpost);
+    return modelMapper.map(saved, new TypeToken<Iterable<IndexCompositionTO>>() {
+    }.getType());
 
-    }
-    return indexCompositionDTOs;
   }
 
-  public IndexCompositionDTO save(IndexCompositionDTO entity) {
+
+  IndexCompositionDTO save(IndexCompositionDTO entity) {
 
     IndexCompositionTO indexCompositionTO = modelMapper.map(entity, IndexCompositionTO.class);
 
@@ -99,7 +95,7 @@ public class IndexCompositionService {
   }
 
   @PostConstruct
-   void initIndexCompositionDTOMapper() {
+  void initIndexCompositionDTOMapper() {
 
     Converter<IndexCompositionDTO, IndexCompositionTO> toUppercase = new AbstractConverter<IndexCompositionDTO, IndexCompositionTO>() {
 
@@ -122,34 +118,6 @@ public class IndexCompositionService {
         indexCompositionTO.setIndustry(indexCompositionDTO.getIndustry());
 
         return indexCompositionTO;
-      }
-    };
-
-    modelMapper.addConverter(toUppercase);
-
-  }
-
-  @PostConstruct
-   void initEODIndexCompositionDTOMapper() {
-
-    Converter<EODIndexCompositionDTO, IndexCompositionDTO> toUppercase = new AbstractConverter<EODIndexCompositionDTO, IndexCompositionDTO>() {
-
-      @Override
-      protected IndexCompositionDTO convert(EODIndexCompositionDTO eODIndexCompositionDTO) {
-
-        IndexCompositionDTO indexCompositionDTO = new IndexCompositionDTO();
-
-        indexCompositionDTO.setCode(eODIndexCompositionDTO.getCode());
-
-        indexCompositionDTO.setExchange(eODIndexCompositionDTO.getExchange());
-
-        indexCompositionDTO.setName(eODIndexCompositionDTO.getName());
-
-        indexCompositionDTO.setSector(eODIndexCompositionDTO.getSector());
-
-        indexCompositionDTO.setIndustry(eODIndexCompositionDTO.getIndustry());
-
-        return indexCompositionDTO;
       }
     };
 

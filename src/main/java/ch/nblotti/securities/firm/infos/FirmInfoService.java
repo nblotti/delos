@@ -29,9 +29,6 @@ public class FirmInfoService {
 
 
   @Autowired
-  EODFirmInfoRepository EODFirmInfoRepository;
-
-  @Autowired
   FirmInfoRepository firmInfoRepository;
 
 
@@ -39,23 +36,6 @@ public class FirmInfoService {
   protected ModelMapper modelMapper;
 
 
-
-  public Optional<FirmInfoDTO> getInfosByDateAndExchangeAndFirm(LocalDate runDate, String exchange, String symbol) {
-
-    Optional<EODFirmInfosDTO> firmInfosDTO = EODFirmInfoRepository.getInfosByDateAndExchangeAndFirm(runDate, exchange, symbol);
-
-    if (!firmInfosDTO.isPresent())
-      return Optional.empty();
-
-    FirmInfoDTO fIpost = modelMapper.map(firmInfosDTO, FirmInfoDTO.class);
-    fIpost.setExchange(exchange);
-    fIpost.setDate(runDate);
-    fIpost.setCode(symbol);
-
-    return Optional.of(fIpost);
-
-
-  }
 
   public FirmInfoDTO findTopByCodeOrderByDate(String code) {
 
@@ -85,7 +65,7 @@ public class FirmInfoService {
   }
 
   @PostConstruct
-  public void initFirmEODInfoMapper() {
+  public void initFirmInfoDTOMapper() {
 
     Converter<FirmInfoDTO, FirmInfoTO> toUppercase = new AbstractConverter<FirmInfoDTO, FirmInfoTO>() {
 
@@ -133,7 +113,7 @@ public class FirmInfoService {
 
 
   @PostConstruct
-  public void initFirmEODInfoTOMapper() {
+  public void initFirmInfoTOMapper() {
 
     Converter<FirmInfoTO, FirmInfoDTO> toUppercase = new AbstractConverter<FirmInfoTO, FirmInfoDTO>() {
 
@@ -178,53 +158,5 @@ public class FirmInfoService {
     modelMapper.addConverter(toUppercase);
 
   }
-
-  @PostConstruct
-  public void initFirmInfoMapper() {
-
-    Converter<EODFirmInfosDTO, FirmInfoDTO> toUppercase = new AbstractConverter<EODFirmInfosDTO, FirmInfoDTO>() {
-
-      @Override
-      protected FirmInfoDTO convert(EODFirmInfosDTO eODFirmInfosDTO) {
-        FirmInfoDTO firmInfoDTO = new FirmInfoDTO();
-        firmInfoDTO.setCode(eODFirmInfosDTO.getCode());
-        firmInfoDTO.setName(eODFirmInfosDTO.getName());
-        firmInfoDTO.setType(eODFirmInfosDTO.getType());
-        firmInfoDTO.setExchange(eODFirmInfosDTO.getExchange());
-        firmInfoDTO.setCurrencyName(eODFirmInfosDTO.getCurrencyName());
-        firmInfoDTO.setCurrencySymbol(eODFirmInfosDTO.getCurrencySymbol());
-        firmInfoDTO.setCountryISO(eODFirmInfosDTO.getCountryISO());
-        firmInfoDTO.setIsin(eODFirmInfosDTO.getISIN());
-        firmInfoDTO.setcCusip(eODFirmInfosDTO.getCUSIP());
-        firmInfoDTO.setcCik(eODFirmInfosDTO.getCIK());
-        firmInfoDTO.setEmployerIdNumber(eODFirmInfosDTO.getEmployerIdNumber());
-        firmInfoDTO.setFiscalYearEnd(eODFirmInfosDTO.getFiscalYearEnd());
-        firmInfoDTO.setiPODate(eODFirmInfosDTO.getIPODate());
-        firmInfoDTO.setInternationalDomestic(eODFirmInfosDTO.getInternationalDomestic());
-        firmInfoDTO.setSector(eODFirmInfosDTO.getSector());
-
-        firmInfoDTO.setIndustry(eODFirmInfosDTO.getIndustry());
-        firmInfoDTO.setGicSector(eODFirmInfosDTO.getGicSector());
-        firmInfoDTO.setGicGroup(eODFirmInfosDTO.getGicGroup());
-        firmInfoDTO.setGicIndustry(eODFirmInfosDTO.getGicIndustry());
-        firmInfoDTO.setGicSubIndustry(eODFirmInfosDTO.getGicSubIndustry());
-        firmInfoDTO.setDescription(eODFirmInfosDTO.getDescription());
-        firmInfoDTO.setAddress(eODFirmInfosDTO.getAddress());
-
-        firmInfoDTO.setPhone(eODFirmInfosDTO.getPhone());
-        firmInfoDTO.setWebURL(eODFirmInfosDTO.getWebURL());
-        firmInfoDTO.setLogoURL(eODFirmInfosDTO.getLogoURL());
-        firmInfoDTO.setFullTimeEmployees(eODFirmInfosDTO.getFullTimeEmployees());
-        firmInfoDTO.setUpdatedAt(eODFirmInfosDTO.getUpdatedAt());
-
-
-        return firmInfoDTO;
-      }
-    };
-
-    modelMapper.addConverter(toUppercase);
-
-  }
-
 
 }

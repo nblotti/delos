@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.format.Formatter;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.ParseException;
@@ -53,7 +52,6 @@ public class SecuritiesApplication {
   }
 
 
-
   @Bean
   public DateTimeFormatter format1() {
     return DateTimeFormatter.ofPattern(dateFormat);
@@ -87,7 +85,6 @@ public class SecuritiesApplication {
       }
     };
   }
-
 
 
 }

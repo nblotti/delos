@@ -35,16 +35,6 @@ public class FirmQuoteService {
   @Autowired
   FirmQuoteRepository firmQuoteRepository;
 
-  @Autowired
-  private EODFirmQuoteRepository EODFirmQuoteRepository;
-
-
-  public List<FirmQuoteDTO> getExchangeDataForDate(LocalDate localDate, String exchange) {
-    List<EODFirmQuoteDTO> eodFirmQuoteDTOS = EODFirmQuoteRepository.getExchangeDataByDate(localDate, exchange);
-    List<FirmQuoteDTO> firmsTOs = eodFirmQuoteDTOS.stream().map(x -> modelMapper.map(x, FirmQuoteDTO.class)).collect(Collectors.toList());
-    firmsTOs.stream().forEach(x -> x.setActualExchange(exchange));
-    return firmsTOs;
-  }
 
 
   public Iterable<FirmQuoteDTO> saveAllEODMarketQuotes(List<FirmQuoteDTO> firmsTOs) {
@@ -62,7 +52,7 @@ public class FirmQuoteService {
 
 
   @PostConstruct
-  public void initFirmQuoteTOsMapper() {
+   void initFirmQuoteTOsMapper() {
 
     Converter<FirmQuoteDTO, FirmQuoteTO> toUppercase = new AbstractConverter<FirmQuoteDTO, FirmQuoteTO>() {
 
@@ -86,7 +76,7 @@ public class FirmQuoteService {
 
 
   @PostConstruct
-  public void initFirmEODQuoteTOsMapper() {
+   void initFirmEODQuoteTOsMapper() {
 
     Converter<FirmQuoteTO, FirmQuoteDTO> toUppercase = new AbstractConverter<FirmQuoteTO, FirmQuoteDTO>() {
 
@@ -108,29 +98,6 @@ public class FirmQuoteService {
 
   }
 
-
-  @PostConstruct
-  public void initFirmQuoteMapper() {
-
-    Converter<EODFirmQuoteDTO, FirmQuoteDTO> toUppercase = new AbstractConverter<EODFirmQuoteDTO, FirmQuoteDTO>() {
-
-      @Override
-      protected FirmQuoteDTO convert(EODFirmQuoteDTO firmDTO) {
-        FirmQuoteDTO firmQuoteTO = new FirmQuoteDTO();
-        firmQuoteTO.setName(firmDTO.getName());
-        firmQuoteTO.setCode(firmDTO.getCode());
-        firmQuoteTO.setExchangeShortName(firmDTO.getExchange_short_name());
-        firmQuoteTO.setDate(LocalDate.parse(firmDTO.getDate(), format1));
-        firmQuoteTO.setMarketCapitalization(firmDTO.getMarketCapitalization());
-        firmQuoteTO.setVolume(firmDTO.getVolume());
-        firmQuoteTO.setAdjustedClose(firmDTO.getAdjusted_close());
-        return firmQuoteTO;
-      }
-    };
-
-    modelMapper.addConverter(toUppercase);
-
-  }
 
 
 }
