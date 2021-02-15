@@ -8,9 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.time.LocalDate;
-import java.util.Optional;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 
 @Service
@@ -29,13 +30,16 @@ public class FirmSharesStatsService {
   private FirmSharesStatsRepository firmSharesStatsRepository;
 
 
-  public FirmShareStatsDTO save(FirmShareStatsDTO entity) {
+  public List<FirmShareStatsDTO> saveAll(List<FirmShareStatsDTO> entity) {
 
-    FirmShareStatsTO firmEODInfoTO = modelMapper.map(entity, FirmShareStatsTO.class);
+    List<FirmShareStatsTO> firmQuoteTOS = entity.stream().map(x -> modelMapper.map(x, FirmShareStatsTO.class)).collect(Collectors.toList());
 
-    FirmShareStatsTO saved = firmSharesStatsRepository.save(firmEODInfoTO);
+    Iterable<FirmShareStatsTO> saved = firmSharesStatsRepository.saveAll(firmQuoteTOS);
 
-    return modelMapper.map(saved, FirmShareStatsDTO.class);
+    return StreamSupport.stream(saved.spliterator(), false)
+      .map(n -> modelMapper.map(n, FirmShareStatsDTO.class))
+      .collect(Collectors.toList());
+
 
   }
 
@@ -57,6 +61,10 @@ public class FirmSharesStatsService {
         firmShareStatsTO.setShortRatio(firmShareStatsDTO.getShortRatio());
         firmShareStatsTO.setShortPercentOutstanding(firmShareStatsDTO.getShortPercentOutstanding());
         firmShareStatsTO.setShortPercentFloat(firmShareStatsDTO.getShortPercentFloat());
+        firmShareStatsTO.setDate(firmShareStatsDTO.getDate());
+        firmShareStatsTO.setCode(firmShareStatsDTO.getCode());
+        firmShareStatsTO.setExchange(firmShareStatsDTO.getExchange());
+
         return firmShareStatsTO;
       }
     };
@@ -83,6 +91,10 @@ public class FirmSharesStatsService {
         firmShareStatsDTO.setShortRatio(firmEODShareStatsTO.getShortRatio());
         firmShareStatsDTO.setShortPercentOutstanding(firmEODShareStatsTO.getShortPercentOutstanding());
         firmShareStatsDTO.setShortPercentFloat(firmEODShareStatsTO.getShortPercentFloat());
+        firmShareStatsDTO.setDate(firmEODShareStatsTO.getDate());
+        firmShareStatsDTO.setCode(firmEODShareStatsTO.getCode());
+        firmShareStatsDTO.setExchange(firmEODShareStatsTO.getExchange());
+
         return firmShareStatsDTO;
       }
     };

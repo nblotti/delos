@@ -79,6 +79,8 @@ public class FirmHighlightsService {
       @Override
       protected FirmHighlightsDTO convert(FirmHighlightsTO firmEODHighlightsTO) {
         FirmHighlightsDTO firmHighlightsDTO = new FirmHighlightsDTO();
+        firmHighlightsDTO.setCode(firmEODHighlightsTO.getCode());
+        firmHighlightsDTO.setExchange(firmEODHighlightsTO.getExchange());
         firmHighlightsDTO.setMarketCapitalization(firmEODHighlightsTO.getMarketCapitalization());
         firmHighlightsDTO.setMarketCapitalizationMln(firmEODHighlightsTO.getMarketCapitalizationMln());
         firmHighlightsDTO.seteBITDA(firmEODHighlightsTO.geteBITDA());
@@ -104,6 +106,7 @@ public class FirmHighlightsService {
         firmHighlightsDTO.setGrossProfitTTM(firmEODHighlightsTO.getGrossProfitTTM());
         firmHighlightsDTO.setDilutedEpsTTM(firmEODHighlightsTO.getDilutedEpsTTM());
         firmHighlightsDTO.setQuarterlyEarningsGrowthYOY(firmEODHighlightsTO.getQuarterlyEarningsGrowthYOY());
+        firmHighlightsDTO.setDate(firmEODHighlightsTO.getDate());
 
         return firmHighlightsDTO;
       }
@@ -121,31 +124,34 @@ public class FirmHighlightsService {
       @Override
       protected FirmHighlightsTO convert(FirmHighlightsDTO firmHighlightsDTO) {
         FirmHighlightsTO firmHighlightsTO = new FirmHighlightsTO();
-        firmHighlightsTO.setMarketCapitalization(firmHighlightsTO.getMarketCapitalization());
-        firmHighlightsTO.setMarketCapitalizationMln(firmHighlightsTO.getMarketCapitalizationMln());
-        firmHighlightsTO.seteBITDA(firmHighlightsTO.geteBITDA());
-        firmHighlightsTO.setpERatio(firmHighlightsTO.getpERatio());
-        firmHighlightsTO.setpEGRatio(firmHighlightsTO.getpEGRatio());
-        firmHighlightsTO.setWallStreetTargetPrice(firmHighlightsTO.getWallStreetTargetPrice());
-        firmHighlightsTO.setBookValue(firmHighlightsTO.getBookValue());
-        firmHighlightsTO.setDividendShare(firmHighlightsTO.getDividendShare());
-        firmHighlightsTO.setDividendYield(firmHighlightsTO.getDividendYield());
-        firmHighlightsTO.setEarningsShare(firmHighlightsTO.getEarningsShare());
-        firmHighlightsTO.setePSEstimateCurrentYear(firmHighlightsTO.getePSEstimateCurrentYear());
-        firmHighlightsTO.setePSEstimateNextYear(firmHighlightsTO.getePSEstimateNextYear());
-        firmHighlightsTO.setePSEstimateNextQuarter(firmHighlightsTO.getePSEstimateNextQuarter());
-        firmHighlightsTO.setePSEstimateCurrentQuarter(firmHighlightsTO.getePSEstimateCurrentQuarter());
-        firmHighlightsTO.setMostRecentQuarter(firmHighlightsTO.getMostRecentQuarter());
-        firmHighlightsTO.setProfitMargin(firmHighlightsTO.getProfitMargin());
-        firmHighlightsTO.setOperatingMarginTTM(firmHighlightsTO.getOperatingMarginTTM());
-        firmHighlightsTO.setReturnOnAssetsTTM(firmHighlightsTO.getReturnOnAssetsTTM());
-        firmHighlightsTO.setReturnOnEquityTTM(firmHighlightsTO.getReturnOnEquityTTM());
-        firmHighlightsTO.setRevenueTTM(firmHighlightsTO.getRevenueTTM());
-        firmHighlightsTO.setRevenuePerShareTTM(firmHighlightsTO.getRevenuePerShareTTM());
-        firmHighlightsTO.setQuarterlyRevenueGrowthYOY(firmHighlightsTO.getQuarterlyRevenueGrowthYOY());
-        firmHighlightsTO.setGrossProfitTTM(firmHighlightsTO.getGrossProfitTTM());
-        firmHighlightsTO.setDilutedEpsTTM(firmHighlightsTO.getDilutedEpsTTM());
-        firmHighlightsTO.setQuarterlyEarningsGrowthYOY(firmHighlightsTO.getQuarterlyEarningsGrowthYOY());
+        firmHighlightsTO.setCode(firmHighlightsDTO.getCode());
+        firmHighlightsTO.setExchange(firmHighlightsDTO.getExchange());
+        firmHighlightsTO.setMarketCapitalization(firmHighlightsDTO.getMarketCapitalization());
+        firmHighlightsTO.setMarketCapitalizationMln(firmHighlightsDTO.getMarketCapitalizationMln());
+        firmHighlightsTO.seteBITDA(firmHighlightsDTO.geteBITDA());
+        firmHighlightsTO.setpERatio(firmHighlightsDTO.getpERatio());
+        firmHighlightsTO.setpEGRatio(firmHighlightsDTO.getpEGRatio());
+        firmHighlightsTO.setWallStreetTargetPrice(firmHighlightsDTO.getWallStreetTargetPrice());
+        firmHighlightsTO.setBookValue(firmHighlightsDTO.getBookValue());
+        firmHighlightsTO.setDividendShare(firmHighlightsDTO.getDividendShare());
+        firmHighlightsTO.setDividendYield(firmHighlightsDTO.getDividendYield());
+        firmHighlightsTO.setEarningsShare(firmHighlightsDTO.getEarningsShare());
+        firmHighlightsTO.setePSEstimateCurrentYear(firmHighlightsDTO.getePSEstimateCurrentYear());
+        firmHighlightsTO.setePSEstimateNextYear(firmHighlightsDTO.getePSEstimateNextYear());
+        firmHighlightsTO.setePSEstimateNextQuarter(firmHighlightsDTO.getePSEstimateNextQuarter());
+        firmHighlightsTO.setePSEstimateCurrentQuarter(firmHighlightsDTO.getePSEstimateCurrentQuarter());
+        firmHighlightsTO.setMostRecentQuarter(firmHighlightsDTO.getMostRecentQuarter());
+        firmHighlightsTO.setProfitMargin(firmHighlightsDTO.getProfitMargin());
+        firmHighlightsTO.setOperatingMarginTTM(firmHighlightsDTO.getOperatingMarginTTM());
+        firmHighlightsTO.setReturnOnAssetsTTM(firmHighlightsDTO.getReturnOnAssetsTTM());
+        firmHighlightsTO.setReturnOnEquityTTM(firmHighlightsDTO.getReturnOnEquityTTM());
+        firmHighlightsTO.setRevenueTTM(firmHighlightsDTO.getRevenueTTM());
+        firmHighlightsTO.setRevenuePerShareTTM(firmHighlightsDTO.getRevenuePerShareTTM());
+        firmHighlightsTO.setQuarterlyRevenueGrowthYOY(firmHighlightsDTO.getQuarterlyRevenueGrowthYOY());
+        firmHighlightsTO.setGrossProfitTTM(firmHighlightsDTO.getGrossProfitTTM());
+        firmHighlightsTO.setDilutedEpsTTM(firmHighlightsDTO.getDilutedEpsTTM());
+        firmHighlightsTO.setQuarterlyEarningsGrowthYOY(firmHighlightsDTO.getQuarterlyEarningsGrowthYOY());
+        firmHighlightsTO.setDate(firmHighlightsDTO.getDate());
 
         return firmHighlightsTO;
       }

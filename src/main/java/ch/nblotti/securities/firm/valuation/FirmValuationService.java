@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 
 @Service
@@ -24,13 +27,17 @@ public class FirmValuationService {
   @Autowired
   protected ModelMapper modelMapper;
 
-  public FirmValuationDTO save(FirmValuationDTO entity) {
+  public List<FirmValuationDTO> saveAll(List<FirmValuationDTO> entity) {
 
-    FirmValuationTO firmEODInfoTO = modelMapper.map(entity, FirmValuationTO.class);
 
-    FirmValuationTO saved = firmValuationRepository.save(firmEODInfoTO);
+    List<FirmValuationTO> firmQuoteTOS = entity.stream().map(x -> modelMapper.map(x, FirmValuationTO.class)).collect(Collectors.toList());
 
-    return modelMapper.map(saved, FirmValuationDTO.class);
+    Iterable<FirmValuationTO> saved = firmValuationRepository.saveAll(firmQuoteTOS);
+
+    return StreamSupport.stream(saved.spliterator(), false)
+      .map(n -> modelMapper.map(n, FirmValuationDTO.class))
+      .collect(Collectors.toList());
+
 
   }
 

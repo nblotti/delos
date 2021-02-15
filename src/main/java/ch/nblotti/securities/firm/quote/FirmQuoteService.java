@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -37,7 +38,7 @@ public class FirmQuoteService {
 
 
 
-  public Iterable<FirmQuoteDTO> saveAllEODMarketQuotes(List<FirmQuoteDTO> firmsTOs) {
+  public Iterable<FirmQuoteDTO> saveAll(List<FirmQuoteDTO> firmsTOs) {
 
 
     List<FirmQuoteTO> firmQuoteTOS = firmsTOs.stream().map(x -> modelMapper.map(x, FirmQuoteTO.class)).collect(Collectors.toList());

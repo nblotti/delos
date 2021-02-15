@@ -11,8 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.time.LocalDate;
-import java.util.Optional;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -36,7 +35,6 @@ public class FirmInfoService {
   protected ModelMapper modelMapper;
 
 
-
   public FirmInfoDTO findTopByCodeOrderByDate(String code) {
 
     FirmInfoTO firmHighlightsDTO = firmInfoRepository.findTopByCodeOrderByDate(code);
@@ -54,13 +52,19 @@ public class FirmInfoService {
 
   }
 
-  public FirmInfoDTO save(FirmInfoDTO entity) {
+  public List<FirmInfoDTO> saveAll(List<FirmInfoDTO> entity) {
 
-    FirmInfoTO firmInfoTO = modelMapper.map(entity, FirmInfoTO.class);
 
-    FirmInfoTO saved = firmInfoRepository.save(firmInfoTO);
+    List<FirmInfoTO> firmInfoTO = entity.stream().map(x -> modelMapper.map(x, FirmInfoTO.class)).collect(Collectors.toList());
 
-    return modelMapper.map(saved, FirmInfoDTO.class);
+
+    Iterable<FirmInfoTO> saved = firmInfoRepository.saveAll(firmInfoTO);
+
+
+    return StreamSupport.stream(saved.spliterator(), false)
+      .map(n -> modelMapper.map(n, FirmInfoDTO.class))
+      .collect(Collectors.toList());
+
 
   }
 
@@ -101,6 +105,8 @@ public class FirmInfoService {
         firmInfoTO.setLogoURL(firmInfoDTO.getLogoURL());
         firmInfoTO.setFullTimeEmployees(firmInfoDTO.getFullTimeEmployees());
         firmInfoTO.setUpdatedAt(firmInfoDTO.getUpdatedAt());
+        firmInfoTO.setDate(firmInfoDTO.getDate());
+        firmInfoTO.setCurrentExchange(firmInfoDTO.getCurrentExchange());
 
 
         return firmInfoTO;
@@ -149,6 +155,8 @@ public class FirmInfoService {
         firmInfoDTO.setLogoURL(firmEODInfoTO.getLogoURL());
         firmInfoDTO.setFullTimeEmployees(firmEODInfoTO.getFullTimeEmployees());
         firmInfoDTO.setUpdatedAt(firmEODInfoTO.getUpdatedAt());
+        firmInfoDTO.setDate(firmEODInfoTO.getDate());
+        firmInfoDTO.setCurrentExchange(firmEODInfoTO.getCurrentExchange());
 
 
         return firmInfoDTO;

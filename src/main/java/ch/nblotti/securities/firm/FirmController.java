@@ -29,7 +29,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/firm")
@@ -114,34 +113,34 @@ public class FirmController {
 
 
   @PostMapping(value = "/exchange")
-  public Iterable<FirmQuoteDTO> saveAllEODMarketQuotes(List<FirmQuoteDTO> firmsTOs) {
-    return firmQuoteService.saveAllEODMarketQuotes(firmsTOs);
+  public Iterable<FirmQuoteDTO> saveAllEODMarketQuote(@RequestBody List<FirmQuoteDTO> firmsTOs) {
+    return firmQuoteService.saveAll(firmsTOs);
   }
 
-  @PostMapping(value = "/info")
-  public FirmInfoDTO save(FirmInfoDTO firmInfoDTO) {
+  @PostMapping(value = "/infos")
+  public Iterable<FirmInfoDTO> saveAllFirmInfo(@RequestBody List<FirmInfoDTO> firmInfoDTO) {
 
-    return firmInfoService.save(firmInfoDTO);
+    return firmInfoService.saveAll(firmInfoDTO);
   }
 
-  @PostMapping(value = "/valuation")
-  public FirmValuationDTO save(FirmValuationDTO firmValuationDTO) {
+  @PostMapping(value = "/valuations")
+  public Iterable<FirmValuationDTO> saveAllFirmValuation(@RequestBody List<FirmValuationDTO> firmValuationDTO) {
 
-    return firmValuationService.save(firmValuationDTO);
-
-  }
-
-
-  @PostMapping(value = "/highlight")
-  public FirmHighlightsDTO save( FirmHighlightsDTO firmHighlightsDTO) {
-    return firmHighlightsService.save(firmHighlightsDTO);
+    return firmValuationService.saveAll(firmValuationDTO);
 
   }
 
-  @PostMapping(value = "/sharestat")
-  public FirmShareStatsDTO save(FirmShareStatsDTO firmShareStatsDTO) {
 
-    return firmSharesStatsService.save(firmShareStatsDTO);
+  @PostMapping(value = "/highlights")
+  public Iterable<FirmHighlightsDTO> saveAllfirmHighlight(@RequestBody  List<FirmHighlightsDTO> firmHighlightsDTO) {
+    return firmHighlightsService.saveAll(firmHighlightsDTO);
+
+  }
+
+  @PostMapping(value = "/sharestats")
+  public Iterable<FirmShareStatsDTO> saveAllFirmShareStats(@RequestBody List<FirmShareStatsDTO> firmShareStatsDTO) {
+
+    return firmSharesStatsService.saveAll(firmShareStatsDTO);
 
   }
 
