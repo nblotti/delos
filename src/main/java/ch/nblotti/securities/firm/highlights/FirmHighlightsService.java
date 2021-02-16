@@ -28,14 +28,12 @@ public class FirmHighlightsService {
   public static final String FIRM_MAP = "firmsMap";
 
 
-
   @Autowired
   private FirmHighlightsRepository firmHighlightsRepository;
 
 
   @Autowired
   protected ModelMapper modelMapper;
-
 
 
   public FirmHighlightsDTO findTopByCodeOrderByDate(String code) {
@@ -51,15 +49,16 @@ public class FirmHighlightsService {
       .collect(Collectors.toList());
   }
 
-  public Iterable<FirmHighlightsDTO> saveAll(Iterable<FirmHighlightsDTO> firmHighlightsDTO) {
+  public Iterable<FirmHighlightsDTO> saveAll(List<FirmHighlightsDTO> entity) {
 
-    Iterable<FirmHighlightsTO> firmHighlightsTO = modelMapper.map(firmHighlightsDTO, new TypeToken<Iterable<FirmHighlightsTO>>() {}.getType());
+
+    List<FirmHighlightsTO> firmHighlightsTO = entity.stream().map(x -> modelMapper.map(x, FirmHighlightsTO.class)).collect(Collectors.toList());
 
     Iterable<FirmHighlightsTO> saved = firmHighlightsRepository.saveAll(firmHighlightsTO);
 
-    return modelMapper.map(saved, new TypeToken<List<FirmHighlightsDTO>>() {}.getType());
+    return modelMapper.map(saved, new TypeToken<List<FirmHighlightsDTO>>() {
+    }.getType());
   }
-
 
 
   public FirmHighlightsDTO save(FirmHighlightsDTO firmHighlightsDTO) {
