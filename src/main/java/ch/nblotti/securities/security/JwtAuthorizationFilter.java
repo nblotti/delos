@@ -68,15 +68,8 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
     if (StringUtils.isNotEmpty(token)) {
       Credentials credentials = validateToken(token);
 
-      List<SimpleGrantedAuthority> authorities = Collections.emptyList();
-
-      if (!credentials.getRoles().isEmpty()) {
-        for (String role : credentials.getRoles()) {
-          if (!role.isEmpty()) {
-            authorities.add(new SimpleGrantedAuthority(role));
-          }
-        }
-      }
+      List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+      credentials.getRoles().stream().map(p -> new SimpleGrantedAuthority(p)).forEach(authorities::add);
       return new UsernamePasswordAuthenticationToken(credentials.getEmail(), null, authorities);
     }
 
