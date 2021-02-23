@@ -16,8 +16,15 @@ spec:
     spec:
       containers:
         - name: nblotti
-          image: nblotti/delos:v0.0.79
+          image: nblotti/delos:v0.0.109
           ports:
             - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 8080
+            initialDelaySeconds: 10
+            failureThreshold: 1
+            periodSeconds: 30
       imagePullSecrets:
         - name: regcred
