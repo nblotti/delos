@@ -1,4 +1,4 @@
-package ch.nblotti.securities;
+package ch.nblotti;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.modelmapper.ModelMapper;
