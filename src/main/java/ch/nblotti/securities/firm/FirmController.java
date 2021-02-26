@@ -19,6 +19,7 @@ import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -32,6 +33,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/firm")
+@Transactional
 public class FirmController {
 
   @Autowired
@@ -117,10 +119,20 @@ public class FirmController {
     return firmQuoteService.saveAll(firmsTOs);
   }
 
+  @DeleteMapping(value = "/exchange")
+  public void deleteMarketQuoteByDate(@RequestParam LocalDate localDate) {
+     firmQuoteService.deleteByDate(localDate);
+  }
+
   @PostMapping(value = "/infos")
   public Iterable<FirmInfoDTO> saveAllFirmInfo(@RequestBody List<FirmInfoDTO> firmInfoDTO) {
 
     return firmInfoService.saveAll(firmInfoDTO);
+  }
+
+  @DeleteMapping(value = "/infos")
+  public void deleteFirmInfoByDate(@RequestParam LocalDate localDate) {
+    firmInfoService.deleteByDate(localDate);
   }
 
   @PostMapping(value = "/valuations")
@@ -130,6 +142,11 @@ public class FirmController {
 
   }
 
+  @DeleteMapping(value = "/valuations")
+  public void deleteFirmValuationByDate(@RequestParam LocalDate localDate) {
+    firmValuationService.deleteByDate(localDate);
+  }
+
 
   @PostMapping(value = "/highlights")
   public Iterable<FirmHighlightsDTO> saveAllfirmHighlight(@RequestBody  List<FirmHighlightsDTO> firmHighlightsDTO) {
@@ -137,11 +154,20 @@ public class FirmController {
 
   }
 
+  @DeleteMapping(value = "/highlights")
+  public void deleteFirmHighlightByDate(@RequestParam LocalDate localDate) {
+    firmHighlightsService.deleteByDate(localDate);
+  }
   @PostMapping(value = "/sharestats")
   public Iterable<FirmShareStatsDTO> saveAllFirmShareStats(@RequestBody List<FirmShareStatsDTO> firmShareStatsDTO) {
 
     return firmSharesStatsService.saveAll(firmShareStatsDTO);
 
+  }
+
+  @DeleteMapping(value = "/sharestats")
+  public void deleteFirmShareStatsByDate(@RequestParam LocalDate localDate) {
+    firmSharesStatsService.deleteByDate(localDate);
   }
 
 

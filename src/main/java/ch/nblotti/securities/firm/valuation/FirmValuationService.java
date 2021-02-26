@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -94,4 +95,8 @@ public class FirmValuationService {
   }
 
 
+
+  public void deleteByDate(LocalDate localDate) {
+    firmValuationRepository.deleteByDateSql(localDate);
+  }
 }

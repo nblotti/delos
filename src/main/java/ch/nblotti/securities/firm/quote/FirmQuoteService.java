@@ -37,7 +37,6 @@ public class FirmQuoteService {
   FirmQuoteRepository firmQuoteRepository;
 
 
-
   public Iterable<FirmQuoteDTO> saveAll(List<FirmQuoteDTO> firmsTOs) {
 
 
@@ -53,7 +52,7 @@ public class FirmQuoteService {
 
 
   @PostConstruct
-   void initFirmQuoteTOsMapper() {
+  void initFirmQuoteTOsMapper() {
 
     Converter<FirmQuoteDTO, FirmQuoteTO> toUppercase = new AbstractConverter<FirmQuoteDTO, FirmQuoteTO>() {
 
@@ -77,7 +76,7 @@ public class FirmQuoteService {
 
 
   @PostConstruct
-   void initFirmEODQuoteTOsMapper() {
+  void initFirmEODQuoteTOsMapper() {
 
     Converter<FirmQuoteTO, FirmQuoteDTO> toUppercase = new AbstractConverter<FirmQuoteTO, FirmQuoteDTO>() {
 
@@ -100,5 +99,7 @@ public class FirmQuoteService {
   }
 
 
-
+  public void deleteByDate(LocalDate localDate) {
+    firmQuoteRepository.deleteByDateSql(localDate);
+  }
 }

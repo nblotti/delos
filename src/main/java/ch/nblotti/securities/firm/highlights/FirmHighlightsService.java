@@ -160,4 +160,8 @@ public class FirmHighlightsService {
 
   }
 
+
+  public void deleteByDate(LocalDate localDate) {
+    firmHighlightsRepository.deleteByDateSql(localDate);
+  }
 }
