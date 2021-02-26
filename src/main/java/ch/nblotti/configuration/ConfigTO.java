@@ -12,7 +12,7 @@ public class ConfigTO {
   @Id
   @SequenceGenerator(initialValue = 2000000, name = "config_id_gen", sequenceName = "config_id_seq", allocationSize = 1)
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "config_id_gen")
-  private Integer id;
+  private Long id;
 
   @Column(name = "CODE")
   private String code;
@@ -35,11 +35,11 @@ public class ConfigTO {
     this.value = value;
   }
 
-  public void setId(Integer id) {
+  public void setId(Long id) {
     this.id = id;
   }
 
-  public Integer getId() {
+  public Long getId() {
     return id;
   }
 

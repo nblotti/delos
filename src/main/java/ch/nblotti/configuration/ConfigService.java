@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -86,6 +87,21 @@ public class ConfigService {
 
     return modelMapper.map(configTO, ConfigDTO.class);
 
+  }
+
+  public void deleteById(Long id) {
+    this.configurationRepository.deleteById(id);
+  }
+
+
+    public Optional<ConfigDTO> findById(Long id) {
+
+    Optional<ConfigTO> returned = this.configurationRepository.findById(id);
+
+    if (returned.isPresent())
+      return Optional.of(modelMapper.map(returned.get(), ConfigDTO.class));
+    else
+      return Optional.empty();
   }
 }
 

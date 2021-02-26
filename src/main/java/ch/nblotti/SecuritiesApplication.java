@@ -58,6 +58,7 @@ public class SecuritiesApplication {
   }
 
 
+
   @Bean
   public Cache cacheOne() {
     return new CaffeineCache(CACHE_NAME, Caffeine.newBuilder()
