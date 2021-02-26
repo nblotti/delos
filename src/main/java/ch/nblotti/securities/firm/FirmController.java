@@ -33,7 +33,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/firm")
-@Transactional
 public class FirmController {
 
   @Autowired
