@@ -53,18 +53,15 @@ public class FirmInfoService {
 
   }
 
-  public List<FirmInfoDTO> saveAll(List<FirmInfoDTO> entity) {
+  public FirmInfoDTO save(FirmInfoDTO entity) {
 
 
-    List<FirmInfoTO> firmInfoTO = entity.stream().map(x -> modelMapper.map(x, FirmInfoTO.class)).collect(Collectors.toList());
+    FirmInfoTO firmInfoTO = modelMapper.map(entity, FirmInfoTO.class);
+
+    FirmInfoTO saved = firmInfoRepository.save(firmInfoTO);
 
 
-    Iterable<FirmInfoTO> saved = firmInfoRepository.saveAll(firmInfoTO);
-
-
-    return StreamSupport.stream(saved.spliterator(), false)
-      .map(n -> modelMapper.map(n, FirmInfoDTO.class))
-      .collect(Collectors.toList());
+    return modelMapper.map(saved, FirmInfoDTO.class);
 
 
   }

@@ -31,15 +31,12 @@ public class FirmSharesStatsService {
   private FirmSharesStatsRepository firmSharesStatsRepository;
 
 
-  public List<FirmShareStatsDTO> saveAll(List<FirmShareStatsDTO> entity) {
+  public FirmShareStatsDTO save(FirmShareStatsDTO entity) {
 
-    List<FirmShareStatsTO> firmQuoteTOS = entity.stream().map(x -> modelMapper.map(x, FirmShareStatsTO.class)).collect(Collectors.toList());
+    FirmShareStatsTO firmQuoteTOS = modelMapper.map(entity, FirmShareStatsTO.class);
+    FirmShareStatsTO saved = firmSharesStatsRepository.save(firmQuoteTOS);
 
-    Iterable<FirmShareStatsTO> saved = firmSharesStatsRepository.saveAll(firmQuoteTOS);
-
-    return StreamSupport.stream(saved.spliterator(), false)
-      .map(n -> modelMapper.map(n, FirmShareStatsDTO.class))
-      .collect(Collectors.toList());
+    return modelMapper.map(saved, FirmShareStatsDTO.class);
 
 
   }
@@ -103,7 +100,6 @@ public class FirmSharesStatsService {
     modelMapper.addConverter(toUppercase);
 
   }
-
 
 
   public void deleteByDate(LocalDate localDate) {

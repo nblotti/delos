@@ -28,16 +28,13 @@ public class FirmValuationService {
   @Autowired
   protected ModelMapper modelMapper;
 
-  public List<FirmValuationDTO> saveAll(List<FirmValuationDTO> entity) {
+  public FirmValuationDTO save(FirmValuationDTO entity) {
 
 
-    List<FirmValuationTO> firmQuoteTOS = entity.stream().map(x -> modelMapper.map(x, FirmValuationTO.class)).collect(Collectors.toList());
+    FirmValuationTO firmQuoteTOS = modelMapper.map(entity, FirmValuationTO.class);
+    FirmValuationTO saved = firmValuationRepository.save(firmQuoteTOS);
 
-    Iterable<FirmValuationTO> saved = firmValuationRepository.saveAll(firmQuoteTOS);
-
-    return StreamSupport.stream(saved.spliterator(), false)
-      .map(n -> modelMapper.map(n, FirmValuationDTO.class))
-      .collect(Collectors.toList());
+    return modelMapper.map(saved, FirmValuationDTO.class);
 
 
   }
@@ -93,7 +90,6 @@ public class FirmValuationService {
     modelMapper.addConverter(toUppercase);
 
   }
-
 
 
   public void deleteByDate(LocalDate localDate) {

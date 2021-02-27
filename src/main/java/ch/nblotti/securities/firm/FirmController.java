@@ -114,19 +114,19 @@ public class FirmController {
 
 
   @PostMapping(value = "/exchange")
-  public Iterable<FirmQuoteDTO> saveAllEODMarketQuote(@RequestBody List<FirmQuoteDTO> firmsTOs) {
-    return firmQuoteService.saveAll(firmsTOs);
+  public FirmQuoteDTO saveEODMarketQuote(@RequestBody FirmQuoteDTO firmsTO) {
+    return firmQuoteService.save(firmsTO);
   }
 
   @DeleteMapping(value = "/exchange")
   public void deleteMarketQuoteByDate(@RequestParam LocalDate localDate) {
-     firmQuoteService.deleteByDate(localDate);
+    firmQuoteService.deleteByDate(localDate);
   }
 
   @PostMapping(value = "/infos")
-  public Iterable<FirmInfoDTO> saveAllFirmInfo(@RequestBody List<FirmInfoDTO> firmInfoDTO) {
+  public FirmInfoDTO saveFirmInfo(@RequestBody FirmInfoDTO firmInfoDTO) {
 
-    return firmInfoService.saveAll(firmInfoDTO);
+    return firmInfoService.save(firmInfoDTO);
   }
 
   @DeleteMapping(value = "/infos")
@@ -135,9 +135,9 @@ public class FirmController {
   }
 
   @PostMapping(value = "/valuations")
-  public Iterable<FirmValuationDTO> saveAllFirmValuation(@RequestBody List<FirmValuationDTO> firmValuationDTO) {
+  public FirmValuationDTO saveFirmValuation(@RequestBody FirmValuationDTO firmValuationDTO) {
 
-    return firmValuationService.saveAll(firmValuationDTO);
+    return firmValuationService.save(firmValuationDTO);
 
   }
 
@@ -148,8 +148,8 @@ public class FirmController {
 
 
   @PostMapping(value = "/highlights")
-  public Iterable<FirmHighlightsDTO> saveAllfirmHighlight(@RequestBody  List<FirmHighlightsDTO> firmHighlightsDTO) {
-    return firmHighlightsService.saveAll(firmHighlightsDTO);
+  public FirmHighlightsDTO saveFirmHighlight(@RequestBody FirmHighlightsDTO firmHighlightsDTO) {
+    return firmHighlightsService.save(firmHighlightsDTO);
 
   }
 
@@ -157,10 +157,11 @@ public class FirmController {
   public void deleteFirmHighlightByDate(@RequestParam LocalDate localDate) {
     firmHighlightsService.deleteByDate(localDate);
   }
-  @PostMapping(value = "/sharestats")
-  public Iterable<FirmShareStatsDTO> saveAllFirmShareStats(@RequestBody List<FirmShareStatsDTO> firmShareStatsDTO) {
 
-    return firmSharesStatsService.saveAll(firmShareStatsDTO);
+  @PostMapping(value = "/sharestats")
+  public FirmShareStatsDTO saveFirmShareStats(@RequestBody FirmShareStatsDTO firmShareStatsDTO) {
+
+    return firmSharesStatsService.save(firmShareStatsDTO);
 
   }
 

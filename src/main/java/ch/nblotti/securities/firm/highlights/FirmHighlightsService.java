@@ -49,25 +49,15 @@ public class FirmHighlightsService {
       .collect(Collectors.toList());
   }
 
-  public Iterable<FirmHighlightsDTO> saveAll(List<FirmHighlightsDTO> entity) {
+  public FirmHighlightsDTO save(FirmHighlightsDTO entity) {
 
 
-    List<FirmHighlightsTO> firmHighlightsTO = entity.stream().map(x -> modelMapper.map(x, FirmHighlightsTO.class)).collect(Collectors.toList());
-
-    Iterable<FirmHighlightsTO> saved = firmHighlightsRepository.saveAll(firmHighlightsTO);
-
-    return modelMapper.map(saved, new TypeToken<List<FirmHighlightsDTO>>() {
-    }.getType());
-  }
-
-
-  public FirmHighlightsDTO save(FirmHighlightsDTO firmHighlightsDTO) {
-    FirmHighlightsTO firmHighlightsTO = modelMapper.map(firmHighlightsDTO, FirmHighlightsTO.class);
-
+    FirmHighlightsTO firmHighlightsTO = modelMapper.map(entity, FirmHighlightsTO.class);
     FirmHighlightsTO saved = firmHighlightsRepository.save(firmHighlightsTO);
 
     return modelMapper.map(saved, FirmHighlightsDTO.class);
   }
+
 
 
   @PostConstruct

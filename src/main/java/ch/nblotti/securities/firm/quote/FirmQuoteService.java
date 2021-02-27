@@ -37,16 +37,14 @@ public class FirmQuoteService {
   FirmQuoteRepository firmQuoteRepository;
 
 
-  public Iterable<FirmQuoteDTO> saveAll(List<FirmQuoteDTO> firmsTOs) {
+  public FirmQuoteDTO save(FirmQuoteDTO firmsTO) {
 
 
-    List<FirmQuoteTO> firmQuoteTOS = firmsTOs.stream().map(x -> modelMapper.map(x, FirmQuoteTO.class)).collect(Collectors.toList());
+    FirmQuoteTO firmQuoteTOS = modelMapper.map(firmsTO, FirmQuoteTO.class);
 
-    Iterable<FirmQuoteTO> saved = firmQuoteRepository.saveAll(firmQuoteTOS);
+    FirmQuoteTO saved = firmQuoteRepository.save(firmQuoteTOS);
 
-    return StreamSupport.stream(saved.spliterator(), false)
-      .map(n -> modelMapper.map(n, FirmQuoteDTO.class))
-      .collect(Collectors.toList());
+    return modelMapper.map(saved, FirmQuoteDTO.class);
 
   }
 
