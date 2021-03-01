@@ -9,6 +9,8 @@ import ch.nblotti.securities.firm.quote.FirmQuoteDTO;
 import ch.nblotti.securities.firm.quote.FirmQuoteService;
 import ch.nblotti.securities.firm.sharestats.FirmShareStatsDTO;
 import ch.nblotti.securities.firm.sharestats.FirmSharesStatsService;
+import ch.nblotti.securities.firm.split.FirmSplitDTO;
+import ch.nblotti.securities.firm.split.FirmSplitService;
 import ch.nblotti.securities.firm.valuation.FirmValuationDTO;
 import ch.nblotti.securities.firm.valuation.FirmValuationService;
 import com.jayway.jsonpath.Configuration;
@@ -53,6 +55,9 @@ public class FirmController {
 
   @Autowired
   FirmValuationService firmValuationService;
+
+  @Autowired
+  FirmSplitService firmSplitService;
 
   @Autowired
   RestTemplate restTemplate;
@@ -169,6 +174,39 @@ public class FirmController {
   @DeleteMapping(value = "/sharestats")
   public void deleteFirmShareStatsByDate(@RequestParam LocalDate localDate) {
     firmSharesStatsService.deleteByDate(localDate);
+  }
+
+
+  @PutMapping(value = "/split")
+  public FirmSplitDTO updateSplit(@RequestBody FirmSplitDTO firmSplitDTO) {
+
+    return firmSplitService.save(firmSplitDTO);
+
+  }
+
+  @PostMapping(value = "/split")
+  public FirmSplitDTO saveSplit(@RequestBody FirmSplitDTO firmSplitDTO) {
+
+    return firmSplitService.save(firmSplitDTO);
+
+  }
+  @PostMapping(value = "/splits")
+  public  List<FirmSplitDTO>  saveSplits(@RequestBody List<FirmSplitDTO> firmSplitDTOs) {
+
+    return firmSplitService.saveAll(firmSplitDTOs);
+
+  }
+  @GetMapping(value = "/splits")
+  public  List<FirmSplitDTO>  findAll() {
+
+    return firmSplitService.findAll();
+
+  }
+
+
+  @GetMapping(value = "/splitbydate")
+  public List<FirmSplitDTO> getSplitByDate(@RequestParam LocalDate localDate) {
+    return firmSplitService.findAllByDate(localDate);
   }
 
 
