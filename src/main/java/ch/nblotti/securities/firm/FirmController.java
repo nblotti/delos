@@ -119,6 +119,13 @@ public class FirmController {
   }
 
 
+
+  @GetMapping(value = "/exchange")
+  public List<FirmQuoteDTO> findAllByCodeOrderByDateAsc(@RequestParam String code) {
+    return firmQuoteService.findAllByCodeOrderByDateAsc(code);
+  }
+
+
   @PostMapping(value = "/exchange")
   public FirmQuoteDTO saveEODMarketQuote(@RequestBody FirmQuoteDTO firmsTO) {
     return firmQuoteService.save(firmsTO);

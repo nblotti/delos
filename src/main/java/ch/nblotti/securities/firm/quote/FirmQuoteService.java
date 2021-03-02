@@ -1,6 +1,7 @@
 package ch.nblotti.securities.firm.quote;
 
 
+import ch.nblotti.securities.firm.split.FirmSplitDTO;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
@@ -11,6 +12,7 @@ import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -96,6 +98,14 @@ public class FirmQuoteService {
 
   }
 
+  public List<FirmQuoteDTO> findAllByCodeOrderByDateAsc(String code) {
+    Collection<FirmQuoteTO> firmQuoteTOS = firmQuoteRepository.findByCodeOrderByDateAsc(code);
+
+    return StreamSupport.stream(firmQuoteTOS.spliterator(), false)
+      .map(n -> modelMapper.map(n, FirmQuoteDTO.class))
+      .collect(Collectors.toList());
+
+  }
 
   public void deleteByDate(LocalDate localDate) {
     firmQuoteRepository.deleteByDateSql(localDate);
