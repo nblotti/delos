@@ -120,8 +120,8 @@ public class FirmController {
 
 
 
-  @GetMapping(value = "/exchange")
-  public List<FirmQuoteDTO> findAllByCodeOrderByDateAsc(@RequestParam String code) {
+  @GetMapping(value = "/exchange/{code}")
+  public List<FirmQuoteDTO> findAllByCodeOrderByDateAsc(@PathVariable("code") String code) {
     return firmQuoteService.findAllByCodeOrderByDateAsc(code);
   }
 

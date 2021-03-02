@@ -59,6 +59,7 @@ public class FirmQuoteService {
       @Override
       protected FirmQuoteTO convert(FirmQuoteDTO firmQuoteDTO) {
         FirmQuoteTO firmQuoteTO = new FirmQuoteTO();
+        firmQuoteTO.setId(firmQuoteDTO.getId());
         firmQuoteTO.setName(firmQuoteDTO.getName());
         firmQuoteTO.setCode(firmQuoteDTO.getCode());
         firmQuoteTO.setExchangeShortName(firmQuoteDTO.getExchangeShortName());
@@ -83,6 +84,7 @@ public class FirmQuoteService {
       @Override
       protected FirmQuoteDTO convert(FirmQuoteTO firmDTO) {
         FirmQuoteDTO firmQuoteTO = new FirmQuoteDTO();
+        firmQuoteTO.setId(firmDTO.getId());
         firmQuoteTO.setName(firmDTO.getName());
         firmQuoteTO.setCode(firmDTO.getCode());
         firmQuoteTO.setExchangeShortName(firmDTO.getExchangeShortName());
