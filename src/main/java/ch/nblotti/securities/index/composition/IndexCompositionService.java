@@ -38,7 +38,6 @@ public class IndexCompositionService {
   protected DateTimeFormatter format1;
 
 
-
   public Iterable<IndexCompositionDTO> saveIndexComposition(Collection<IndexCompositionDTO> indexCompositionDTOS) {
 
     Iterable<IndexCompositionTO> loaded = modelMapper.map(indexCompositionDTOS, new TypeToken<Iterable<IndexCompositionTO>>() {
@@ -74,17 +73,17 @@ public class IndexCompositionService {
 
         indexCompositionDTO.setId(indexCompositionTO.getId());
 
-        indexCompositionDTO.setDate(indexCompositionTO.getDate());
-
         indexCompositionDTO.setCode(indexCompositionTO.getCode());
 
-        indexCompositionDTO.setExchange(indexCompositionTO.getExchange());
+        indexCompositionDTO.setActiveNow(indexCompositionTO.isActiveNow());
 
         indexCompositionDTO.setName(indexCompositionTO.getName());
 
-        indexCompositionDTO.setSector(indexCompositionTO.getSector());
+        indexCompositionDTO.setDelisted(indexCompositionTO.isDelisted());
 
-        indexCompositionDTO.setIndustry(indexCompositionTO.getIndustry());
+        indexCompositionDTO.setStartDate(indexCompositionTO.getStartDate());
+
+        indexCompositionDTO.setEndDate(indexCompositionTO.getEndDate());
 
         return indexCompositionDTO;
       }
@@ -105,17 +104,18 @@ public class IndexCompositionService {
 
         indexCompositionTO.setId(indexCompositionDTO.getId());
 
-        indexCompositionTO.setDate(indexCompositionDTO.getDate());
-
         indexCompositionTO.setCode(indexCompositionDTO.getCode());
 
-        indexCompositionTO.setExchange(indexCompositionDTO.getExchange());
+        indexCompositionTO.setActiveNow(indexCompositionDTO.isActiveNow());
 
         indexCompositionTO.setName(indexCompositionDTO.getName());
 
-        indexCompositionTO.setSector(indexCompositionDTO.getSector());
+        indexCompositionTO.setDelisted(indexCompositionDTO.isDelisted());
 
-        indexCompositionTO.setIndustry(indexCompositionDTO.getIndustry());
+        indexCompositionTO.setStartDate(indexCompositionDTO.getStartDate());
+
+        indexCompositionTO.setEndDate(indexCompositionDTO.getEndDate());
+
 
         return indexCompositionTO;
       }

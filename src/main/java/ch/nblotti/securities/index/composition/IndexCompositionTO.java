@@ -13,23 +13,26 @@ class IndexCompositionTO {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "index_composition_gen")
   private Integer id;
 
-  @Column(name = "date")
-  private LocalDate date;
+
+  @Column(name = "start_date")
+  private LocalDate startDate;
+
+  @Column(name = "end_date")
+  private LocalDate endDate;
 
   @Column(name = "code")
   String code;
 
-  @Column(name = "exchange")
-  String exchange;
-
   @Column(name = "name")
   String name;
 
-  @Column(name = "sector")
-  String sector;
+  @Column(name = "is_active_now")
+  private boolean isActiveNow;
 
-  @Column(name = "industry")
-  String industry;
+
+  @Column(name = "is_deslisted")
+  private boolean isDelisted;
+
 
   public IndexCompositionTO() {
   }
@@ -42,20 +45,28 @@ class IndexCompositionTO {
     this.id = id;
   }
 
+  public LocalDate getStartDate() {
+    return startDate;
+  }
+
+  public void setStartDate(LocalDate startDate) {
+    this.startDate = startDate;
+  }
+
+  public LocalDate getEndDate() {
+    return endDate;
+  }
+
+  public void setEndDate(LocalDate endDate) {
+    this.endDate = endDate;
+  }
+
   public String getCode() {
     return code;
   }
 
   public void setCode(String code) {
     this.code = code;
-  }
-
-  public String getExchange() {
-    return exchange;
-  }
-
-  public void setExchange(String exchange) {
-    this.exchange = exchange;
   }
 
   public String getName() {
@@ -66,28 +77,20 @@ class IndexCompositionTO {
     this.name = name;
   }
 
-  public String getSector() {
-    return sector;
+  public boolean isActiveNow() {
+    return isActiveNow;
   }
 
-  public void setSector(String sector) {
-    this.sector = sector;
+  public void setActiveNow(boolean activeNow) {
+    isActiveNow = activeNow;
   }
 
-  public String getIndustry() {
-    return industry;
+  public boolean isDelisted() {
+    return isDelisted;
   }
 
-  public void setIndustry(String industry) {
-    this.industry = industry;
-  }
-
-  public LocalDate getDate() {
-    return date;
-  }
-
-  public void setDate(LocalDate date) {
-    this.date = date;
+  public void setDelisted(boolean delisted) {
+    isDelisted = delisted;
   }
 }
 

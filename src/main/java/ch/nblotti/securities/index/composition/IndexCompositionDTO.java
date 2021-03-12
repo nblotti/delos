@@ -1,26 +1,26 @@
 package ch.nblotti.securities.index.composition;
 
+
 import java.time.LocalDate;
 
 public class IndexCompositionDTO {
 
   private Integer id;
 
-  private LocalDate date;
-
   private String code;
-
-  private String exchange;
 
   private String name;
 
-  private String sector;
+  private LocalDate startDate;
 
-  private String industry;
+  private LocalDate endDate;
+
+  private boolean isActiveNow;
+
+  private boolean isDelisted;
 
   public IndexCompositionDTO() {
   }
-
 
   public Integer getId() {
     return id;
@@ -28,14 +28,6 @@ public class IndexCompositionDTO {
 
   public void setId(Integer id) {
     this.id = id;
-  }
-
-  public LocalDate getDate() {
-    return date;
-  }
-
-  public void setDate(LocalDate date) {
-    this.date = date;
   }
 
   public String getCode() {
@@ -46,14 +38,6 @@ public class IndexCompositionDTO {
     this.code = code;
   }
 
-  public String getExchange() {
-    return exchange;
-  }
-
-  public void setExchange(String exchange) {
-    this.exchange = exchange;
-  }
-
   public String getName() {
     return name;
   }
@@ -62,20 +46,36 @@ public class IndexCompositionDTO {
     this.name = name;
   }
 
-  public String getSector() {
-    return sector;
+  public LocalDate getStartDate() {
+    return startDate;
   }
 
-  public void setSector(String sector) {
-    this.sector = sector;
+  public void setStartDate(LocalDate startDate) {
+    this.startDate = startDate;
   }
 
-  public String getIndustry() {
-    return industry;
+  public LocalDate getEndDate() {
+    return endDate;
   }
 
-  public void setIndustry(String industry) {
-    this.industry = industry;
+  public void setEndDate(LocalDate endDate) {
+    this.endDate = endDate;
+  }
+
+  public boolean isActiveNow() {
+    return isActiveNow;
+  }
+
+  public void setActiveNow(boolean activeNow) {
+    isActiveNow = activeNow;
+  }
+
+  public boolean isDelisted() {
+    return isDelisted;
+  }
+
+  public void setDelisted(boolean delisted) {
+    isDelisted = delisted;
   }
 }
 
