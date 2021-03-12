@@ -19,17 +19,6 @@ class IndexQuoteTO {
   @Column(name = "date")
   LocalDate date;
 
-  @Column(name = "open")
-  float open;
-
-  @Column(name = "high")
-  float high;
-
-  @Column(name = "low")
-  float low;
-
-  @Column(name = "close")
-  float close;
 
   @Column(name = "adjusted_close")
   float adjustedClose;
@@ -81,35 +70,4 @@ class IndexQuoteTO {
     this.id = id;
   }
 
-  public float getOpen() {
-    return open;
-  }
-
-  public void setOpen(float open) {
-    this.open = open;
-  }
-
-  public float getHigh() {
-    return high;
-  }
-
-  public void setHigh(float high) {
-    this.high = high;
-  }
-
-  public float getLow() {
-    return low;
-  }
-
-  public void setLow(float low) {
-    this.low = low;
-  }
-
-  public float getClose() {
-    return close;
-  }
-
-  public void setClose(float close) {
-    this.close = close;
-  }
 }
