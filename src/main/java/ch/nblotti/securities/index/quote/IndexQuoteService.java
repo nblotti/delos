@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 
 @Service
@@ -36,7 +38,6 @@ public class IndexQuoteService {
   protected DateTimeFormatter format1;
 
 
-
   public IndexQuoteDTO save(IndexQuoteDTO entity) {
 
     IndexQuoteTO indexQuoteTO = modelMapper.map(entity, IndexQuoteTO.class);
@@ -48,6 +49,17 @@ public class IndexQuoteService {
   }
 
 
+  public Collection<IndexQuoteDTO> saveAll(Collection<IndexQuoteDTO> indexQuoteDTOs) {
 
 
+    List<IndexQuoteTO> firmQuoteTOS = indexQuoteDTOs.stream().map(x -> modelMapper.map(x, IndexQuoteTO.class)).collect(Collectors.toList());
+
+    Iterable<IndexQuoteTO> saved = indexQuoteRepository.saveAll(firmQuoteTOS);
+
+    return StreamSupport.stream(saved.spliterator(), false)
+      .map(n -> modelMapper.map(n, IndexQuoteDTO.class))
+      .collect(Collectors.toList());
+
+
+  }
 }

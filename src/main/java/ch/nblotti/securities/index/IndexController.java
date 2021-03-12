@@ -1,6 +1,7 @@
 package ch.nblotti.securities.index;
 
 
+import ch.nblotti.securities.firm.quote.FirmQuoteDTO;
 import ch.nblotti.securities.index.composition.IndexCompositionDTO;
 import ch.nblotti.securities.index.composition.IndexCompositionService;
 import ch.nblotti.securities.index.quote.IndexQuoteDTO;
@@ -23,6 +24,7 @@ public class IndexController {
   @Autowired
   IndexCompositionService indexCompositionService;
 
+
   @Autowired
   IndexQuoteService indexQuoteService;
 
@@ -32,6 +34,20 @@ public class IndexController {
     return indexCompositionService.saveIndexComposition(indexCompositionDTOs);
   }
 
+  @PostMapping(value = "/composition/")
+  public IndexQuoteDTO save(IndexQuoteDTO entity) {
+    return indexQuoteService.save(entity);
+  }
+
+  @PostMapping(value = "/quote")
+  public IndexQuoteDTO saveEODMarketQuote(@RequestBody IndexQuoteDTO indexQuoteDTO) {
+    return indexQuoteService.save(indexQuoteDTO);
+  }
+
+  @PostMapping(value = "/quotes")
+  public Collection<IndexQuoteDTO> saveEODMarketQuote(@RequestBody Collection<IndexQuoteDTO> indexQuoteDTOs) {
+    return indexQuoteService.saveAll(indexQuoteDTOs);
+  }
 
 }
 
