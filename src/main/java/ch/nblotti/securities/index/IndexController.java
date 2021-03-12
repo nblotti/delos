@@ -34,10 +34,6 @@ public class IndexController {
     return indexCompositionService.saveIndexComposition(indexCompositionDTOs);
   }
 
-  @PostMapping(value = "/composition/")
-  public IndexQuoteDTO save(IndexQuoteDTO entity) {
-    return indexQuoteService.save(entity);
-  }
 
   @PostMapping(value = "/quote")
   public IndexQuoteDTO saveEODMarketQuote(@RequestBody IndexQuoteDTO indexQuoteDTO) {
@@ -45,7 +41,7 @@ public class IndexController {
   }
 
   @PostMapping(value = "/quotes")
-  public Collection<IndexQuoteDTO> saveEODMarketQuote(@RequestBody Collection<IndexQuoteDTO> indexQuoteDTOs) {
+  public Collection<IndexQuoteDTO> saveAllEODMarketQuote(@RequestBody Collection<IndexQuoteDTO> indexQuoteDTOs) {
     return indexQuoteService.saveAll(indexQuoteDTOs);
   }
 
