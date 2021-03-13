@@ -9,7 +9,7 @@ class IndexCompositionTO {
 
 
   @Id
-  @SequenceGenerator(initialValue = 2000000, name = "index_composition_id_gen", sequenceName = "index_composition_id_seq", allocationSize = 1)
+  @SequenceGenerator(initialValue = 2000000, name = "index_composition_gen", sequenceName = "index_composition_id_seq", allocationSize = 1)
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "index_composition_gen")
   private Integer id;
 
@@ -30,7 +30,7 @@ class IndexCompositionTO {
   private boolean isActiveNow;
 
 
-  @Column(name = "is_deslisted")
+  @Column(name = "is_delisted")
   private boolean isDelisted;
 
 

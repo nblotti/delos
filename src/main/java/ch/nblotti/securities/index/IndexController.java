@@ -6,10 +6,14 @@ import ch.nblotti.securities.index.composition.IndexCompositionService;
 import ch.nblotti.securities.index.quote.IndexQuoteDTO;
 import ch.nblotti.securities.index.quote.IndexQuoteService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/index")
@@ -27,7 +31,7 @@ public class IndexController {
 
 
   @PostMapping(value = "/composition/")
-  public Iterable<IndexCompositionDTO> saveIndexComposition(@RequestBody Collection<IndexCompositionDTO> indexCompositionDTOs) {
+  public Iterable<IndexCompositionDTO> saveIndexComposition(@RequestBody List<IndexCompositionDTO> indexCompositionDTOs) {
     return indexCompositionService.saveIndexComposition(indexCompositionDTOs);
   }
 
