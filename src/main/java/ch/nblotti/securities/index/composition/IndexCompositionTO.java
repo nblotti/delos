@@ -23,9 +23,6 @@ class IndexCompositionTO {
   @Column(name = "code")
   String code;
 
-  @Column(name = "name")
-  String name;
-
   @Column(name = "is_active_now")
   private boolean isActiveNow;
 
@@ -67,14 +64,6 @@ class IndexCompositionTO {
 
   public void setCode(String code) {
     this.code = code;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public boolean isActiveNow() {

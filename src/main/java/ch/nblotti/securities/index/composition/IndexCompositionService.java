@@ -64,8 +64,6 @@ public class IndexCompositionService {
 
         indexCompositionDTO.setActiveNow(indexCompositionTO.isActiveNow());
 
-        indexCompositionDTO.setName(indexCompositionTO.getName());
-
         indexCompositionDTO.setDelisted(indexCompositionTO.isDelisted());
 
         indexCompositionDTO.setStartDate(indexCompositionTO.getStartDate());
@@ -94,8 +92,6 @@ public class IndexCompositionService {
         indexCompositionTO.setCode(indexCompositionDTO.getCode());
 
         indexCompositionTO.setActiveNow(indexCompositionDTO.isActiveNow());
-
-        indexCompositionTO.setName(indexCompositionDTO.getName());
 
         indexCompositionTO.setDelisted(indexCompositionDTO.isDelisted());
 

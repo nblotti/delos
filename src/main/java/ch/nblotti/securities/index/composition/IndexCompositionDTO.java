@@ -9,8 +9,6 @@ public class IndexCompositionDTO {
 
   private String code;
 
-  private String name;
-
   private LocalDate startDate;
 
   private LocalDate endDate;
@@ -36,14 +34,6 @@ public class IndexCompositionDTO {
 
   public void setCode(String code) {
     this.code = code;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public LocalDate getStartDate() {
