@@ -2,13 +2,12 @@ package ch.nblotti.securities.index.quote;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.Collection;
 
-@RepositoryRestResource(path = "indexquote")
+
 public interface IndexQuoteRepository extends PagingAndSortingRepository<IndexQuoteTO, Integer> {
 
 

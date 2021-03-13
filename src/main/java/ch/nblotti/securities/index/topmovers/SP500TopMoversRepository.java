@@ -3,9 +3,7 @@ package ch.nblotti.securities.index.topmovers;
 import ch.nblotti.securities.firm.common.ReadOnlyRepository;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
-@RepositoryRestResource(path = "sp500topmovers")
 public interface SP500TopMoversRepository extends ReadOnlyRepository<SP500TopMoversTO, Integer> {
 
   @Cacheable("findFSPirst10TopLoosers")
