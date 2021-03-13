@@ -27,7 +27,7 @@ public class IndexController {
 
 
   @PostMapping(value = "/composition/")
-  public Iterable<IndexCompositionDTO> saveIndexComposition(@RequestParam Collection<IndexCompositionDTO> indexCompositionDTOs) {
+  public Iterable<IndexCompositionDTO> saveIndexComposition(@RequestBody Collection<IndexCompositionDTO> indexCompositionDTOs) {
     return indexCompositionService.saveIndexComposition(indexCompositionDTOs);
   }
 
