@@ -48,6 +48,9 @@ public class IndexCompositionService {
 
   }
 
+  public void deleteAll() {
+    indexCompositionRepository.deleteAll();
+  }
 
   @PostConstruct
   public void initIndexCompositionTOMapper() {
