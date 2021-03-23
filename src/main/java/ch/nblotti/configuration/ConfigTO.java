@@ -21,8 +21,7 @@ public class ConfigTO {
   private String type;
 
 
-  @Lob
-  @Column(name = "VALUE")
+  @Column(name = "VALUE", columnDefinition="TEXT")
   private String value;
 
 
