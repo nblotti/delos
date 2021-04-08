@@ -8,6 +8,8 @@ import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -65,6 +67,11 @@ public class FirmQuoteService {
           .collect(Collectors.toList());
     }
     return Collections.emptyList();
+  }
+
+  public void refreshMaterializedView() {
+    firmWeeklyQuoteRepository.refreshMaterializedView();
+    firmMonthlyQuoteRepository.refreshMaterializedView();
   }
 
   public Iterable<FirmPeriodicQuoteDTO> findAllByCodeAndStartDateGreaterThanEqualAndEndDateLessThanEqual(String code, ChronoUnit type, LocalDate startDate, LocalDate endDate) {

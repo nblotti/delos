@@ -64,8 +64,10 @@ public class QuoteController {
     }
     return firmQuoteService.findAllByCodeAndStartDateGreaterThanEqualAndEndDateLessThanEqual(code, type, startDate, endDate);
   }
-
-
+  @PostMapping(value = "/refresh")
+  public void refreshMaterializedView() {
+    firmQuoteService.refreshMaterializedView();
+  }
 }
 
 
