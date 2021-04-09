@@ -18,5 +18,6 @@ interface FirmMonthlyQuoteRepository extends ReadOnlyRepository<FirmMonthlyQuote
   @Modifying
   public void refreshMaterializedView();
 
-  public Iterable<FirmMonthlyQuoteTO> findAllByCodeAndStartDateGreaterThanEqualAndEndDateLessThanEqual(String code, LocalDate endDate, LocalDate startDate);
+  public Iterable<FirmMonthlyQuoteTO> findAllByCodeAndStartDateGreaterThanEqualAndEndDateLessThanEqual(String code, LocalDate startDate, LocalDate endDate);
+
 }

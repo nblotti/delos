@@ -1,17 +1,16 @@
 package ch.nblotti.securities.index.quote;
 
 
-import org.modelmapper.AbstractConverter;
-import org.modelmapper.Converter;
+import ch.nblotti.securities.firm.quote.FirmPeriodicQuoteDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -32,6 +31,11 @@ public class IndexQuoteService {
 
   @Autowired
   protected ModelMapper modelMapper;
+
+  @Autowired
+  private IndexWeeklyQuoteRepository indexWeeklyQuoteRepository;
+  @Autowired
+  private IndexMonthlyQuoteRepository indexMonthlyQuoteRepository;
 
 
   @Autowired
@@ -62,4 +66,29 @@ public class IndexQuoteService {
 
 
   }
+
+
+  public void refreshMaterializedView() {
+    indexWeeklyQuoteRepository.refreshMaterializedView();
+    indexMonthlyQuoteRepository.refreshMaterializedView();
+  }
+
+  public Iterable<FirmPeriodicQuoteDTO> findAllByStartDateGreaterThanEqualAndEndDateLessThanEqual( ChronoUnit type, LocalDate startDate) {
+    switch (type) {
+      case WEEKS:
+        Iterable<IndexWeeklyQuoteTO> weekQuote = indexWeeklyQuoteRepository.findAllByStartDateGreaterThanEqualAndEndDateLessThanEqual( startDate, startDate);
+        return StreamSupport.stream(weekQuote.spliterator(), false)
+          .map(n -> modelMapper.map(n, FirmPeriodicQuoteDTO.class))
+          .collect(Collectors.toList());
+
+      case MONTHS:
+        Iterable<IndexMonthlyQuoteTO> monthQuote = indexMonthlyQuoteRepository.findAllByStartDateGreaterThanEqualAndEndDateLessThanEqual(startDate, startDate);
+        return StreamSupport.stream(monthQuote.spliterator(), false)
+          .map(n -> modelMapper.map(n, FirmPeriodicQuoteDTO.class))
+          .collect(Collectors.toList());
+    }
+    return Collections.emptyList();
+  }
+
+
 }
