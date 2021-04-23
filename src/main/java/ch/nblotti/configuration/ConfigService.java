@@ -29,7 +29,7 @@ public class ConfigService {
   @Transactional
   public List<ConfigDTO> findAllByCodeAndType(String code, String type) {
 
-    List<ConfigTO> configDTOS = configurationRepository.findAllByCodeAndType(code, type);
+    List<ConfigTO> configDTOS = configurationRepository.findAllByCodeAndTypeOOrderByIdDesc(code, type);
 
 
     return StreamSupport.stream(configDTOS.spliterator(), false)
