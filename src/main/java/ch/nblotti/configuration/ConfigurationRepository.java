@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 interface ConfigurationRepository extends PagingAndSortingRepository<ConfigTO, Long> {
 
-  public List<ConfigTO> findAllByCodeAndTypeOOrderByIdDesc(String code, String type);
+  public List<ConfigTO> findAllByCodeAndTypeOrderByIdDesc(String code, String type);
 }
