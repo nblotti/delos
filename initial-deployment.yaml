@@ -2,11 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nblotti-delos
-  annotations:
-    prometheus.io/scrape: 'true'
-    prometheus.io/port: '8080'
-    prometheus.io/path: "/actuator/prometheus"
-    prometheus.io/scheme: "http"
   labels:
     app: nblotti_delos
 spec:
