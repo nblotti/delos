@@ -25,65 +25,66 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 
-  @Value("${idp.validation.url}")
-  public String idpValidationUrl;
+    @Value("${idp.validation.url}")
+    public String idpValidationUrl;
 
-  @Bean
-  public HttpFirewall defaultHttpFirewall() {
-    DefaultHttpFirewall firewall = new DefaultHttpFirewall();
-    return firewall;
-  }
+    @Bean
+    public HttpFirewall defaultHttpFirewall() {
+        DefaultHttpFirewall firewall = new DefaultHttpFirewall();
+        return firewall;
+    }
 
-  @Override
-  public void configure(WebSecurity web) throws Exception {
-    super.configure(web);
-    web.httpFirewall(defaultHttpFirewall());
-  }
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        super.configure(web);
+        web.httpFirewall(defaultHttpFirewall());
+    }
 
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-    http.cors().and()
-      .csrf().disable()
-      .authorizeRequests()
-      .antMatchers("/ping").permitAll()
-      .antMatchers("/config/*").permitAll()
-      .anyRequest().authenticated()
-      .and()
-      .addFilter(jwtAuthorizationFilter())
-      // .addFilter(new JwtAuthorizationFilter(authenticationManager()))
-      .sessionManagement()
-      .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-  }
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.cors().and()
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/ping").permitAll()
+                .antMatchers("/config/*").permitAll()
+                .antMatchers("/actuator/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .addFilter(jwtAuthorizationFilter())
+                // .addFilter(new JwtAuthorizationFilter(authenticationManager()))
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+    }
 
-  @Override
-  public void configure(AuthenticationManagerBuilder auth) throws Exception {
-    auth.inMemoryAuthentication()
-      .withUser("user")
-      .password(passwordEncoder().encode("password"))
-      .authorities("ROLE_USER");
-  }
+    @Override
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.inMemoryAuthentication()
+                .withUser("user")
+                .password(passwordEncoder().encode("password"))
+                .authorities("ROLE_USER");
+    }
 
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
-    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
 
-    return source;
-  }
+        return source;
+    }
 
-  private JwtAuthorizationFilter jwtAuthorizationFilter()  throws Exception{
-    return new JwtAuthorizationFilter(authenticationManagerBean(), idpValidationUrl);
-  }
+    private JwtAuthorizationFilter jwtAuthorizationFilter() throws Exception {
+        return new JwtAuthorizationFilter(authenticationManagerBean(), idpValidationUrl);
+    }
 
-  @Bean(name = BeanIds.AUTHENTICATION_MANAGER)
-  @Override
-  public AuthenticationManager authenticationManagerBean() throws Exception {
-    return super.authenticationManagerBean();
-  }
+    @Bean(name = BeanIds.AUTHENTICATION_MANAGER)
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
 }
