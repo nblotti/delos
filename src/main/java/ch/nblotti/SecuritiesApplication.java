@@ -2,8 +2,11 @@ package ch.nblotti;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.metrics.MetricsProperties;
 import org.springframework.boot.actuate.metrics.data.MetricsRepositoryMethodInvocationListener;
@@ -98,6 +101,11 @@ public class SecuritiesApplication {
         MetricsProperties.Data.Repository properties = metricsProperties.getData().getRepository();
         return new MetricsRepositoryMethodInvocationListener(registry, tagsProvider, properties.getMetricName(),
                 properties.getAutotime());
+    }
+    //Fix for https://stackoverflow.com/questions/57607445/spring-actuator-jvm-metrics-not-showing-when-globalmethodsecurity-is-enabled/57908577#57908577
+    @Bean
+    InitializingBean forcePrometheusPostProcessor(BeanPostProcessor meterRegistryPostProcessor, PrometheusMeterRegistry registry) {
+        return () -> meterRegistryPostProcessor.postProcessAfterInitialization(registry, "");
     }
 
 
